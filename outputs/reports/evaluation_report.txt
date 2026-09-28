@@ -1,0 +1,174 @@
+EVALUATION REPORT
+Personalized Product Recommendation Model
+
+1. INTRODUCTION
+
+The evaluation stage was designed to measure the effectiveness of the developed recommendation approaches. Since the dataset contains explicit user ratings ranging from 1 to 5, the system can be evaluated both as a rating-based recommendation system and as a top-K recommendation system.
+
+The Kaggle FIT5212 S1 2025 Recommender System Challenge evaluates predicted ratings using Root Mean Squared Error (RMSE). Therefore, RMSE is relevant when assessing the accuracy of predicted user-item ratings. In addition, this project evaluates the quality of generated recommendations using Precision@K, Recall@K, and NDCG@K.
+
+2. VALIDATION STRATEGY
+
+The original dataset does not contain a timestamp field. Therefore, a true chronological or time-based validation split cannot be performed without introducing information that is not present in the dataset.
+
+Instead, a user-level holdout strategy was used for recommendation evaluation. For users with sufficient interaction history, part of their observed interactions was reserved for evaluation while the remaining interactions were used to generate recommendations.
+
+This approach allows the system to evaluate whether products from the user's held-out interactions can be retrieved by the recommendation model.
+
+3. RELEVANT INTERACTIONS
+
+For top-K recommendation evaluation, ratings of 4 or 5 were treated as relevant interactions.
+
+The evaluation therefore measures whether products that received relatively high ratings from users appear among the recommended products.
+
+The relevant interaction rule can be represented as:
+
+Relevant = 1, if Rating >= 4
+Relevant = 0, otherwise
+
+This converts the explicit-rating problem into a recommendation-ranking evaluation problem.
+
+4. EVALUATION METRICS
+
+4.1 Precision@K
+
+Precision@K measures the proportion of the top K recommended products that are relevant to the user.
+
+Precision@K = Number of relevant recommended items / K
+
+A higher Precision@K indicates that a larger proportion of the recommended products are relevant.
+
+For this project, K = 10 was used for the main top-K evaluation.
+
+4.2 Recall@K
+
+Recall@K measures how many of the user's relevant products were successfully retrieved within the top K recommendations.
+
+Recall@K =
+Number of relevant recommended items /
+Total number of relevant items
+
+A higher Recall@K indicates that the recommendation system retrieves a larger portion of the user's relevant products.
+
+4.3 NDCG@K
+
+Normalized Discounted Cumulative Gain at K evaluates both the relevance of recommended products and their positions in the recommendation list.
+
+NDCG gives greater importance to relevant products appearing near the beginning of the recommendation list.
+
+The metric is calculated using discounted cumulative gain and the ideal discounted cumulative gain:
+
+NDCG@K = DCG@K / IDCG@K
+
+where DCG represents the discounted cumulative gain of the generated ranking and IDCG represents the ideal ranking.
+
+5. EVALUATION OF THE RECOMMENDATION SYSTEM
+
+The recommendation system was evaluated using the prepared interaction dataset.
+
+The evaluation process consisted of the following steps:
+
+1. User interactions were separated into training and held-out interactions.
+
+2. Relevant interactions were identified using the rating threshold of 4.
+
+3. Recommendations were generated using the recommendation models.
+
+4. The top 10 recommendations were selected for each evaluated user.
+
+5. Recommended products were compared with the user's held-out relevant products.
+
+6. Precision@10, Recall@10, and NDCG@10 were calculated.
+
+7. The results were aggregated across the evaluated users.
+
+8. EVALUATED APPROACHES
+
+The following approaches were considered during the project:
+
+* Popularity-based recommendation
+* Collaborative filtering
+* Matrix factorization
+* Content-based recommendation
+* Hybrid recommendation
+
+The popularity-based approach recommends products according to their popularity and rating-related information.
+
+Collaborative filtering uses similarities between users and their interaction histories to identify products that may be relevant to a target user.
+
+Matrix factorization represents users and products in a lower-dimensional latent space and uses these representations to estimate user-product preferences.
+
+Content-based recommendation uses product-name information and TF-IDF representations to identify products with similar textual descriptions.
+
+The hybrid approach combines collaborative, content-based, and popularity information to generate recommendations.
+
+7. EVALUATION RESULTS
+
+The final numerical results should be inserted after running the finalized evaluation pipeline.
+
+Recommended result table:
+
+Metric | Score
+Precision@10 | [INSERT VALUE]
+Recall@10 | [INSERT VALUE]
+NDCG@10 | [INSERT VALUE]
+
+The results should be interpreted together because each metric measures a different aspect of recommendation quality.
+
+Precision@10 indicates how relevant the recommended list is.
+
+Recall@10 indicates how effectively relevant products are retrieved.
+
+NDCG@10 additionally considers the ranking position of relevant products.
+
+8. RMSE EVALUATION
+
+The official FIT5212/ITI5212 Kaggle challenge evaluates predicted ratings using Root Mean Squared Error (RMSE). The competition requires predictions for the user-item pairs contained in the test dataset.
+
+RMSE is defined as:
+
+RMSE = sqrt((1/n) * Σ(y_i - ŷ_i)^2)
+
+where:
+
+y_i = actual rating
+
+ŷ_i = predicted rating
+
+n = number of evaluated observations
+
+A lower RMSE indicates smaller differences between predicted and actual ratings.
+
+Final Kaggle RMSE:
+
+RMSE = [INSERT KAGGLE SCORE]
+
+9. DISCUSSION
+
+The evaluation provides two complementary views of the recommendation system.
+
+The RMSE evaluation measures how accurately the system predicts numerical ratings for user-item pairs. This corresponds directly to the official Kaggle competition objective.
+
+The top-K evaluation measures how effectively the system produces a ranked list of relevant products. This is useful for understanding the practical recommendation behaviour of the system.
+
+Because the dataset does not contain timestamps, the evaluation does not claim to represent a chronological production scenario. Instead, the user-level holdout provides an offline evaluation of recommendation retrieval using the available interaction data.
+
+10. LIMITATIONS
+
+Several limitations should be considered when interpreting the evaluation results.
+
+First, the dataset does not provide timestamps for the interactions. Consequently, chronological train-validation-test splitting cannot be performed using the available fields.
+
+Second, the dataset primarily contains explicit ratings rather than separate event types such as views, clicks, carts, and purchases. Therefore, the interaction representation is based mainly on rating behaviour.
+
+Third, product metadata available in the provided files is limited. The content-based component therefore relies primarily on product names rather than a rich collection of product attributes.
+
+Finally, offline evaluation does not necessarily reproduce the behaviour of users in a real production recommendation environment.
+
+11. CONCLUSION
+
+The evaluation framework combines rating prediction and top-K recommendation metrics to provide a broader assessment of the developed recommendation system.
+
+RMSE measures rating prediction accuracy, while Precision@10, Recall@10, and NDCG@10 measure the quality and ranking of recommended products.
+
+The final model should therefore be discussed using both its quantitative evaluation results and its ability to provide personalized recommendations to users.

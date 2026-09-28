@@ -8,15 +8,5 @@ __pycache__/
 
 .vscode/
 
-data/raw/*
-data/processed/*
-
-models/*.pkl
-models/*.joblib
-
-outputs/figures/*
-outputs/tables/*
-outputs/reports/*
-
 *.log
 .DS_Store

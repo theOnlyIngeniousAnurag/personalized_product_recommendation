@@ -1,0 +1,144 @@
+PERSONALIZED PRODUCT RECOMMENDATION SYSTEM
+MODEL COMPARISON REPORT
+
+1. Introduction
+
+This project implements multiple recommendation approaches to generate personalized product recommendations from user-item interaction data. The models use information available in the FIT5212 S1 2025 Recommender System Challenge dataset.
+
+The implemented approaches include:
+
+* Popularity-Based Recommendation
+* Collaborative Filtering
+* Matrix Factorization
+* Content-Based Recommendation
+* Hybrid Recommendation
+
+The purpose of implementing multiple approaches is to compare different recommendation strategies and identify their characteristics, strengths, and limitations.
+
+2. Popularity-Based Recommendation
+
+The popularity-based approach recommends products based on their overall popularity among users.
+
+For this project, product popularity is determined using the number of interactions and the average rating of products. Products with sufficient interaction history are considered for the popularity ranking.
+
+This approach does not require an individual user's history and can therefore be used as a fallback recommendation strategy.
+
+Advantages:
+
+* Simple to implement
+* Computationally efficient
+* Does not require a user profile
+* Useful for new users
+
+Limitations:
+
+* Recommendations are not highly personalized
+* Popular products may dominate the recommendation list
+* Less useful for users with specific preferences
+
+3. Collaborative Filtering
+
+Collaborative filtering generates recommendations by identifying similarities between users based on their historical product ratings.
+
+The implemented approach represents users using their product-rating interactions and uses similarity between users to identify products that similar users have interacted with or rated positively.
+
+Advantages:
+
+* Provides personalized recommendations
+* Uses user behavior directly
+* Does not require detailed product descriptions
+
+Limitations:
+
+* Cold-start problem for new users
+* Sparse user-item interaction data can reduce effectiveness
+* Computational cost can increase with the number of users and products
+
+4. Matrix Factorization
+
+Matrix factorization represents users and products in a lower-dimensional latent feature space.
+
+The user-item interaction matrix is transformed into latent representations using dimensionality reduction. These representations are then used to estimate relationships between users and products.
+
+Advantages:
+
+* Captures hidden patterns in user-item interactions
+* Reduces the dimensionality of the interaction matrix
+* Can model user and product preferences using latent factors
+
+Limitations:
+
+* Requires sufficient interaction data
+* Latent factors are not always directly interpretable
+* Performance depends on the selected number of components
+
+5. Content-Based Recommendation
+
+The content-based approach recommends products based on the similarity of product information.
+
+Product names are converted into TF-IDF representations. Cosine similarity is then used to identify products with similar textual characteristics.
+
+The approach is particularly useful when a user has previously interacted with products and similar products can be identified from their product names.
+
+Advantages:
+
+* Uses product information directly
+* Can recommend similar products
+* Does not require similarity between users
+
+Limitations:
+
+* Depends on the quality of product metadata
+* May recommend products that are too similar to previous items
+* Has limited ability to discover completely different products
+
+6. Hybrid Recommendation
+
+The hybrid recommendation approach combines multiple recommendation signals.
+
+The implemented hybrid model combines:
+
+* Collaborative filtering information
+* Content-based similarity
+* Product popularity
+
+The combined approach attempts to balance personalized user information with product similarity and general product popularity.
+
+Advantages:
+
+* Combines different recommendation signals
+* Can reduce weaknesses of individual approaches
+* Provides a more flexible recommendation strategy
+* Can combine personalization with product similarity
+
+Limitations:
+
+* More computationally expensive than a simple popularity model
+* Requires tuning of component weights
+* More complex to implement and maintain
+
+7. Overall Comparison
+
+The implemented approaches serve different purposes.
+
+Popularity-based recommendation provides a simple baseline and fallback mechanism.
+
+Collaborative filtering focuses on similarities between users and their historical preferences.
+
+Matrix factorization captures latent relationships between users and products.
+
+Content-based recommendation focuses on similarity between products.
+
+The hybrid approach combines multiple signals to generate recommendations that incorporate both user behavior and product characteristics.
+
+8. Model Selection
+
+The final recommendation system uses the hybrid approach as the primary personalized recommendation strategy, while popularity-based recommendations are retained as a fallback for users with insufficient interaction history.
+
+The final model selection should be supported by the quantitative evaluation results obtained during the evaluation stage.
+
+9. Conclusion
+
+The comparison demonstrates that different recommendation techniques address different aspects of the recommendation problem. A popularity model provides a strong and simple baseline, collaborative filtering captures user-user relationships, matrix factorization captures latent patterns, and content-based filtering uses product information.
+
+The hybrid recommendation approach integrates these complementary signals into a single recommendation pipeline. Its final effectiveness will be determined using the evaluation results produced by the project.

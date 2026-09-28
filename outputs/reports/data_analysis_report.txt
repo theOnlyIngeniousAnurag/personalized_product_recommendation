@@ -1,0 +1,48 @@
+PERSONALIZED PRODUCT RECOMMENDATION SYSTEM
+DATA ANALYSIS REPORT
+
+1. Dataset Overview
+
+The dataset used for this project is the FIT5212 S1 2025 Recommender System Challenge dataset obtained from Kaggle. The dataset was collected from Amazon and contains user-item rating interactions and product information.
+
+The training dataset contains explicit ratings ranging from 1 to 5. The main fields include user ID, product ID, product name, rating, votes, and helpful votes.
+
+2. Dataset Statistics
+
+Training records: 745,889
+Test records: 223,553
+Unique products: 201,325
+
+The rating values range from 1 to 5, making this an explicit-feedback recommendation problem.
+
+3. Rating Distribution
+
+The distribution of ratings is:
+
+Rating 1: 29,149
+Rating 2: 35,446
+Rating 3: 79,870
+Rating 4: 185,193
+Rating 5: 416,231
+
+The dataset contains substantially more high ratings, particularly rating 5, than low ratings.
+
+4. Data Preprocessing
+
+The following preprocessing operations were performed:
+
+* Removed duplicate user-product interactions.
+* Removed records with missing essential values.
+* Converted user and product identifiers into consistent formats.
+* Converted ratings and vote-related fields into numeric values.
+* Retained valid ratings between 1 and 5.
+* Created separate user and product entity datasets.
+* Generated popularity statistics for products.
+
+5. Dataset Limitation
+
+The dataset does not contain a timestamp field. Therefore, a genuine chronological/time-based validation split cannot be performed from the available data. The evaluation procedure uses a user-level holdout strategy instead of assuming or fabricating timestamps.
+
+6. Summary
+
+The processed dataset provides sufficient information for developing popularity-based, collaborative filtering, matrix factorization, content-based, and hybrid recommendation approaches.
