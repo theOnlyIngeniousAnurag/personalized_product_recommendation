@@ -1,0 +1,259 @@
+# API Documentation
+
+## 1. Overview
+
+The Personalized Product Recommendation System provides a REST API implemented using FastAPI.
+
+The API allows external applications to request product recommendations for a specific user.
+
+The API implementation is located at:
+
+`api/recommendation_api.py`
+
+---
+
+## 2. Technology
+
+The API is implemented using:
+
+* Python
+* FastAPI
+* Uvicorn
+* Pandas
+* Scikit-learn
+* TF-IDF
+* Cosine similarity
+
+FastAPI provides automatic interactive API documentation and generates an OpenAPI schema for the application. The default Swagger UI documentation is available at `/docs`, while the OpenAPI schema is available at `/openapi.json`. [FastAPI Documentation](https://fastapi.tiangolo.com/tutorial/first-steps/)
+
+---
+
+## 3. Starting the API
+
+From the project root, activate the virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Then start the API using:
+
+```powershell
+uvicorn api.recommendation_api:app --reload
+```
+
+The API will normally be available at:
+
+`http://127.0.0.1:8000`
+
+---
+
+## 4. API Endpoints
+
+### 4.1 Root Endpoint
+
+**Endpoint:**
+
+`GET /`
+
+**Purpose:**
+
+Checks whether the recommendation API is running.
+
+**Example:**
+
+`http://127.0.0.1:8000/`
+
+**Expected response:**
+
+```json
+{
+    "message": "Recommendation API is running"
+}
+```
+
+---
+
+## 5. Recommendation Endpoint
+
+### Endpoint
+
+`GET /recommend/{user_id}`
+
+### Purpose
+
+Returns product recommendations for the specified user.
+
+### Path Parameter
+
+`user_id`
+
+The identifier of the user for whom recommendations are requested.
+
+### Example
+
+```text
+GET /recommend/1813
+```
+
+The exact user ID can be replaced with another user available in the processed dataset.
+
+---
+
+## 6. Recommendation Count
+
+The API supports requesting a specified number of recommendations where supported by the current implementation.
+
+The returned recommendations contain product information used by the recommendation system.
+
+The system attempts to avoid recommending products that the user has already interacted with.
+
+---
+
+## 7. Known User Recommendation
+
+When a user exists in the interaction dataset, the API uses the user's interaction history.
+
+The recommendation process uses product information and popularity information to generate recommendations.
+
+The current API implementation combines content-based and popularity-based recommendation signals for known users.
+
+---
+
+## 8. New User Recommendation
+
+When a requested user does not have interaction history in the dataset, the API uses a popularity-based fallback.
+
+This allows the API to return recommendations even when there is insufficient historical information for personalized recommendations.
+
+---
+
+## 9. Interactive API Documentation
+
+After starting the API, open:
+
+`http://127.0.0.1:8000/docs`
+
+FastAPI provides an interactive Swagger UI interface at `/docs`. Users can inspect available endpoints, parameters, responses, and execute API requests directly from the browser. [FastAPI Documentation](https://fastapi.tiangolo.com/tutorial/first-steps/)
+
+---
+
+## 10. OpenAPI Documentation
+
+FastAPI automatically generates an OpenAPI schema.
+
+It is available at:
+
+`http://127.0.0.1:8000/openapi.json`
+
+The OpenAPI schema describes the API paths and their parameters and is generated automatically by FastAPI. [FastAPI Documentation](https://fastapi.tiangolo.com/tutorial/metadata/)
+
+---
+
+## 11. Alternative Documentation
+
+FastAPI also provides ReDoc documentation.
+
+It can normally be accessed at:
+
+`http://127.0.0.1:8000/redoc`
+
+This provides another interface for viewing the generated API documentation. [FastAPI Documentation](https://fastapi.tiangolo.com/tutorial/first-steps/)
+
+---
+
+## 12. API Workflow
+
+The API workflow is:
+
+```text
+Client Application
+       │
+       ▼
+GET /recommend/{user_id}
+       │
+       ▼
+Identify User
+       │
+       ├───────────────┐
+       │               │
+       ▼               ▼
+Known User        New User
+       │               │
+       ▼               ▼
+User History     Popular Products
+       │
+       ▼
+Recommendation Generation
+       │
+       ▼
+Rank Products
+       │
+       ▼
+Return Recommendations
+```
+
+---
+
+## 13. Error Handling
+
+The API should return an appropriate HTTP response when an invalid request is received.
+
+For example, an invalid or unavailable user may be handled using the recommendation system's new-user fallback mechanism rather than causing the recommendation process to fail.
+
+---
+
+## 14. API Testing
+
+The API can be tested using:
+
+* browser
+* Swagger UI
+* Python requests
+* FastAPI TestClient
+* automated pytest tests
+
+The interactive Swagger interface at `/docs` can be used to execute requests without requiring a separate API client. [FastAPI Documentation](https://fastapi.tiangolo.com/tutorial/first-steps/)
+
+---
+
+## 15. Example API Usage
+
+A client can request recommendations using:
+
+```text
+GET http://127.0.0.1:8000/recommend/1813
+```
+
+The response contains recommendation information generated by the recommendation system.
+
+---
+
+## 16. API Role in the Project
+
+The API provides a programmatic interface to the recommendation system.
+
+The Streamlit application is intended for interactive demonstration, while the FastAPI service provides an interface that can be consumed by other applications.
+
+Therefore, the project contains both:
+
+* a user-facing Streamlit application
+* a programmatic FastAPI recommendation service
+
+---
+
+## 17. Security and Deployment Considerations
+
+The current API is intended for local development and project demonstration.
+
+Before production deployment, additional features may be required, including:
+
+* authentication
+* authorization
+* request validation
+* rate limiting
+* logging
+* monitoring
+* secure deployment configuration
+
+These features are outside the scope of the current implementation.
