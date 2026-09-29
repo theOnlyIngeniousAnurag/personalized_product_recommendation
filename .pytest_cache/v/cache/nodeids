@@ -1,0 +1,13 @@
+[
+  "tests/test_data_foundation.py::test_data_foundation_audit_json_exists",
+  "tests/test_data_foundation.py::test_popular_products_schema_and_domain",
+  "tests/test_data_foundation.py::test_raw_data_registry_structure",
+  "tests/test_data_foundation.py::test_split_holdout_leakage_and_determinism",
+  "tests/test_data_foundation.py::test_users_schema_and_domain",
+  "tests/test_recommendation.py::test_load_interactions",
+  "tests/test_recommendation.py::test_recommendation_columns",
+  "tests/test_recommendation.py::test_recommendation_engine",
+  "tests/test_recommendation.py::test_recommendation_not_empty",
+  "tests/test_recommendation.py::test_required_columns",
+  "tests/test_recommendation.py::test_unique_users"
+]

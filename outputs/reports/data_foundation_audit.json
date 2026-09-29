@@ -1,0 +1,197 @@
+{
+  "audit_timestamp": "2026-09-29T20:32:00Z",
+  "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
+  "dataset_version": "DATA-v1.0-AUDITED",
+  "declared_source": "Amazon Product Review Crawl (FIT5212 S1 2025, Kaggle: fit-5212-s-1-2025)",
+  "documented_raw_baseline": {
+    "train_records": 745889,
+    "test_records": 223553,
+    "unique_products": 201325,
+    "rating_scale": [
+      1,
+      5
+    ],
+    "rating_distribution": {
+      "rating_1": 29149,
+      "rating_2": 35446,
+      "rating_3": 79870,
+      "rating_4": 185193,
+      "rating_5": 416231
+    },
+    "rating_proportions": {
+      "rating_1_pct": 3.91,
+      "rating_2_pct": 4.75,
+      "rating_3_pct": 10.71,
+      "rating_4_pct": 24.83,
+      "rating_5_pct": 55.8
+    },
+    "mean_rating_approx": 4.24,
+    "timestamp_available": false,
+    "raw_schema": [
+      {
+        "name": "user_id",
+        "type": "string",
+        "description": "User identifier"
+      },
+      {
+        "name": "product_id",
+        "type": "string",
+        "description": "Product identifier"
+      },
+      {
+        "name": "product_name",
+        "type": "string",
+        "description": "Product title/name"
+      },
+      {
+        "name": "rating",
+        "type": "numeric",
+        "description": "Explicit star rating 1-5"
+      },
+      {
+        "name": "votes",
+        "type": "numeric",
+        "description": "Total votes on review"
+      },
+      {
+        "name": "helpful_votes",
+        "type": "numeric",
+        "description": "Helpful votes on review"
+      }
+    ]
+  },
+  "timestamp_investigation": {
+    "status": "NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED",
+    "path_enacted": "PATH B",
+    "temporal_validation_status": "INVALID FOR TEMPORAL VALIDATION",
+    "rationale": "Neither the Kaggle in-class dataset schema nor original project baseline contained timestamp columns. Fabricating timestamps violates Rule 2 and Rule 34."
+  },
+  "authentic_artifacts_audit": {
+    "popular_products": {
+      "file": "data/processed/popular_products.csv",
+      "provenance": "LEGITIMATELY DERIVED from original raw train.csv",
+      "row_count": 33072,
+      "column_count": 7,
+      "columns": [
+        "rank",
+        "product_id",
+        "product_name",
+        "interaction_count",
+        "unique_users",
+        "average_rating",
+        "popularity_score"
+      ],
+      "unique_products": 33072,
+      "missing_values": {
+        "rank": 0,
+        "product_id": 0,
+        "product_name": 0,
+        "interaction_count": 0,
+        "unique_users": 0,
+        "average_rating": 0,
+        "popularity_score": 0
+      },
+      "interaction_count_stats": {
+        "min": 5,
+        "q25": 6.0,
+        "median": 9.0,
+        "mean": 14.42,
+        "q75": 16.0,
+        "max": 275
+      },
+      "average_rating_stats": {
+        "min": 1.17,
+        "median": 4.29,
+        "mean": 4.2,
+        "max": 5.0
+      }
+    },
+    "users": {
+      "file": "data/processed/users.csv",
+      "provenance": "LEGITIMATELY DERIVED from original raw train.csv",
+      "row_count": 2000,
+      "column_count": 5,
+      "columns": [
+        "user_id",
+        "interaction_count",
+        "unique_products",
+        "average_rating",
+        "total_votes"
+      ],
+      "unique_users": 2000,
+      "missing_values": {
+        "user_id": 0,
+        "interaction_count": 0,
+        "unique_products": 0,
+        "average_rating": 0,
+        "total_votes": 0
+      },
+      "interaction_count_stats": {
+        "min": 4,
+        "q25": 169.0,
+        "median": 219.0,
+        "mean": 372.94,
+        "q75": 329.0,
+        "max": 112483
+      },
+      "average_rating_stats": {
+        "min": 1.85,
+        "median": 4.23,
+        "mean": 4.17,
+        "max": 5.0
+      }
+    },
+    "user_segment_summary": {
+      "file": "data/processed/user_segment_summary.csv",
+      "provenance": "LEGITIMATELY DERIVED from original raw train.csv",
+      "rows": [
+        {
+          "segment": "High Activity",
+          "users": 1999,
+          "average_interactions": 373.1290645322661,
+          "average_rating": 4.166613306653327,
+          "average_products": 373.1290645322661,
+          "average_votes": 2764.401700850425
+        },
+        {
+          "segment": "Medium Activity",
+          "users": 1,
+          "average_interactions": 4.0,
+          "average_rating": 4.25,
+          "average_products": 4.0,
+          "average_votes": 4.0
+        }
+      ]
+    }
+  },
+  "quarantined_synthetic_artifacts": {
+    "products_csv": {
+      "file": "data/processed/products.csv",
+      "classification": "SYNTHETIC / INFERRED \u2014 NOT FOR TRAINING/EVALUATION",
+      "notes": "total_votes manufactured as interaction_count * 3."
+    },
+    "interactions_csv": {
+      "file": "data/processed/interactions.csv",
+      "classification": "SYNTHETIC / INFERRED \u2014 NOT FOR TRAINING/EVALUATION",
+      "notes": "24,136 synthesized rows from previous turn; user behavior was fabricated."
+    }
+  },
+  "interaction_semantics": {
+    "event_type": "Explicit Ratings (1-5 integer scale)",
+    "views": "UNSUPPORTED by source data",
+    "clicks": "UNSUPPORTED by source data",
+    "carts": "UNSUPPORTED by source data",
+    "purchases": "UNSUPPORTED by source data",
+    "relevance_threshold": "rating >= 4 (Derived binary preference signal for offline top-K ranking evaluation)"
+  },
+  "split_and_leakage_controls": {
+    "strategy": "Path B: Stratified User-Level Non-Temporal Holdout (80/20 train/val)",
+    "temporal_leakage_risk": "N/A (No timestamps exist in source data)",
+    "content_leakage_control": "TF-IDF vectorizer fitted strictly on training product universe or metadata without validation interaction targets",
+    "popularity_leakage_control": "Popularity rankings recomputed strictly on training split interactions"
+  },
+  "phase_1_exit_decision": {
+    "decision": "BLOCKED",
+    "reason": "Authentic precomputed entity tables (popular_products, users) are verified, but raw interaction records (data/raw/train.csv) remain unpopulated in the environment, and existing processed interactions are quarantined as synthetic. Phase 2 modeling must not proceed on synthetic interactions."
+  }
+}

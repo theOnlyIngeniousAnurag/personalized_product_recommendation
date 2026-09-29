@@ -1,0 +1,8 @@
+{
+  "name": "Personalized Product Recommendation",
+  "description": "Personalized product recommendation system featuring popularity baseline, collaborative filtering, content-based fallback, and user segment analysis built with Python and Streamlit.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

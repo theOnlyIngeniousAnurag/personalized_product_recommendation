@@ -1,0 +1,12 @@
+{
+  "name": "personalized-product-recommendation",
+  "version": "1.0.0",
+  "description": "Personalized Product Recommendation Model with Streamlit UI and FastAPI backend",
+  "scripts": {
+    "dev": "streamlit run app/streamlit_app.py --server.port 3000 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false",
+    "build": "python3 -m pytest tests/test_recommendation.py",
+    "start": "streamlit run app/streamlit_app.py --server.port 3000 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false",
+    "api": "uvicorn api.recommendation_api:app --host 0.0.0.0 --port 8000",
+    "test": "python3 -m pytest tests/test_recommendation.py"
+  }
+}

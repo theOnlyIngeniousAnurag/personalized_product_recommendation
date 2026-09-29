@@ -1,0 +1,19 @@
+{
+  "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
+  "competition_slug": "fit-5212-s-1-2025",
+  "competition_url": "https://www.kaggle.com/competitions/fit-5212-s-1-2025",
+  "registration_timestamp": "2026-09-29T20:30:00Z",
+  "files": {
+    "train.csv": {
+      "status": "MISSING",
+      "expected_path": "data/raw/train.csv",
+      "instructions": "Obtain train.csv from https://www.kaggle.com/competitions/fit-5212-s-1-2025 or student archive and place into data/raw/train.csv"
+    },
+    "test.csv": {
+      "status": "MISSING",
+      "expected_path": "data/raw/test.csv",
+      "instructions": "Obtain test.csv from https://www.kaggle.com/competitions/fit-5212-s-1-2025 or student archive and place into data/raw/test.csv"
+    }
+  },
+  "status": "AWAITING_SOURCE_DATA"
+}
