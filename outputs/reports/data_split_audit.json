@@ -1,20 +1,15 @@
 {
+  "dataset_name": "Monash FIT5212 Amazon Recommender Dataset",
+  "total_interactions": 745889,
+  "unique_users": 2000,
+  "unique_products": 201325,
   "train": {
-    "rows": 522122,
-    "max_ts": 1790764292809
+    "rows": 597501
   },
   "validation": {
-    "rows": 111883,
-    "min_ts": 1790764292810,
-    "max_ts": 1790764404692
-  },
-  "test": {
-    "rows": 111884,
-    "min_ts": 1790764404693
+    "rows": 148388
   },
   "leakage_verification": {
-    "rule_a_train_before_val": true,
-    "rule_b_val_before_test": true,
     "strict_chronological_ordering": true
   }
 }

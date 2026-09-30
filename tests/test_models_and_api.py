@@ -67,6 +67,22 @@ def test_hybrid_recommender(engine):
     assert "recommendation_reason" in recs.columns
 
 
+def test_user_1813_recommendations_metadata_integrity(engine):
+    """Verifies that all returned recommendations for User 1813 contain authentic product names."""
+    recs = engine.recommend_hybrid("1813", n=10)
+    assert len(recs) == 10
+    assert "product_id" in recs.columns
+    assert "product_name" in recs.columns
+    assert "recommendation_score" in recs.columns
+    
+    for _, row in recs.iterrows():
+        pid = str(row["product_id"])
+        name = str(row["product_name"])
+        assert name != "Unknown Product", f"Unresolved product_name for product_id {pid}"
+        assert not name.startswith("Item "), f"Fallback 'Item <ID>' found for catalog product_id {pid}"
+        assert len(name.strip()) > 0
+
+
 def test_cold_start_unknown_user(engine):
     unknown_id = "completely_unknown_user_99999"
     recs = engine.recommend_hybrid(unknown_id, n=5)
@@ -106,6 +122,7 @@ def test_fastapi_endpoints(client):
     r_health = client.get("/health")
     assert r_health.status_code == 200
     assert r_health.json()["status"] == "healthy"
+    assert r_health.json()["total_catalog_items"] == 201325
 
     # Known user recommendation
     r_rec = client.get("/recommend/1813?n=5&model=hybrid")
@@ -113,6 +130,10 @@ def test_fastapi_endpoints(client):
     data = r_rec.json()
     assert len(data["recommendations"]) == 5
     assert data["is_known_user"] is True
+    first_rec = data["recommendations"][0]
+    assert "product_id" in first_rec
+    assert "product_name" in first_rec
+    assert first_rec["product_name"] != "Unknown Product"
 
     # Unknown user recommendation (cold start)
     r_cold = client.get("/recommend/cold_user_xyz?n=5&model=popularity")
@@ -134,5 +155,4 @@ def test_user_segments_artifact():
     assert len(df) == 3
     expected_segs = {"Low Activity", "Medium Activity", "High Activity"}
     assert set(df["segment"]) == expected_segs
-    # Non-collapsed check
     assert (df["users"] > 0).all()

@@ -146,6 +146,19 @@ class RecommendationEngine:
     # HELPER UTILITIES
     # ============================================================
 
+    def get_product_name(self, product_id: str | int) -> str:
+        """Resolves authentic product name for a product_id from canonical catalog."""
+        pid_str = str(product_id).strip()
+        if pid_str in self.product_name_lookup:
+            return self.product_name_lookup[pid_str]
+        try:
+            pid_int = int(pid_str)
+            if pid_int in self.product_name_lookup:
+                return self.product_name_lookup[pid_int]
+        except (ValueError, TypeError):
+            pass
+        return f"Item {pid_str}"
+
     def get_user_history(self, user_id: str) -> set:
         """Returns set of product IDs already interacted with by the user."""
         return self.user_history_map.get(str(user_id), set())
@@ -169,9 +182,9 @@ class RecommendationEngine:
             # Fallback to popular products if empty
             return self.recommend_popularity(n=n, reason="Popularity fallback (empty recommendation pool)")
 
-        pids = [item[0] for item in top_items]
+        pids = [str(item[0]) for item in top_items]
         scores = [round(float(item[1]), 4) for item in top_items]
-        names = [self.product_name_lookup.get(pid, "Unknown Product") for pid in pids]
+        names = [self.get_product_name(pid) for pid in pids]
 
         df = pd.DataFrame({
             "product_id": pids,

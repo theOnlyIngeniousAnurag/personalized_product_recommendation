@@ -1,6 +1,7 @@
 """
 Data Foundation Test Suite (FIT5212 Amazon Recommender System)
-Validates dataset schema integrity, user profiles, train/val splits, and registry metadata.
+Validates dataset schema integrity, user profiles, train/val splits,
+canonical catalog counts, and product identity mappings.
 """
 
 import os
@@ -28,12 +29,46 @@ from config.config import (
 )
 
 
+def test_canonical_catalog_product_count():
+    """Validates that products.csv contains exactly 201,325 unique product IDs and no missing names."""
+    path = PROCESSED_PRODUCTS
+    assert os.path.exists(path), f"Missing {path}"
+    
+    df = pd.read_csv(path, dtype={"product_id": str})
+    assert len(df) == 201325, f"Expected 201,325 products in products.csv, got {len(df):,}"
+    assert df["product_id"].nunique() == 201325, "Duplicate product_ids found in products.csv"
+    assert df["product_name"].isna().sum() == 0, "Null product_names found in products.csv"
+
+
+def test_regression_anchor_product_names():
+    """Verifies that regression anchor product IDs map to their exact authentic product names."""
+    path = PROCESSED_PRODUCTS
+    df = pd.read_csv(path, dtype={"product_id": str})
+    mapping = dict(zip(df["product_id"], df["product_name"]))
+
+    anchors = {
+        "212370": "The Lord of the Rings - The Fellowship of the Ring",
+        "212359": "The Lord of the Rings - The Fellowship of the Ring (Full Screen Edition)",
+        "192681": "The Lord of the Rings - The Fellowship of the Ring (Widescreen Edition)",
+        "213993": "The Lord of the Rings - The Fellowship of the Ring (Special Extended Edition)",
+        "91600": "Harry Potter and the Prisoner of Azkaban (Book 3, Audio)",
+        "38820": "Harry Potter and the Prisoner of Azkaban (Book 3)",
+    }
+
+    for pid, expected_name in anchors.items():
+        assert pid in mapping, f"Missing regression anchor product_id: {pid}"
+        actual_name = mapping[pid]
+        assert actual_name == expected_name, (
+            f"Product name mismatch for {pid}: expected '{expected_name}', got '{actual_name}'"
+        )
+
+
 def test_popular_products_schema_and_domain():
     """Validates schema, non-emptiness, and popularity score bounds for popular_products.csv."""
     path = PROCESSED_POPULAR_PRODUCTS
     assert os.path.exists(path), f"Missing {path}"
     
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, dtype={"product_id": str})
     assert len(df) > 0, "popular_products.csv is empty"
     
     id_col = "product_id" if "product_id" in df.columns else "item_id"
@@ -50,7 +85,7 @@ def test_users_schema_and_domain():
     path = PROCESSED_USERS
     assert os.path.exists(path), f"Missing {path}"
     
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, dtype={"user_id": str})
     assert len(df) > 0, "users.csv is empty"
     
     assert "user_id" in df.columns, "Missing user_id column"
