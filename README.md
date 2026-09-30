@@ -1,106 +1,430 @@
 # Personalized Product Recommendation System
-## Machine Learning Internship Capstone — Project 3
 
-An end-to-end, production-grade recommendation engine built in Python using Scikit-learn, SciPy, FastAPI, and Streamlit on the authentic Monash FIT5212 S1 2025 dataset.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Machine Learning](https://img.shields.io/badge/ML-Collaborative%20%7C%20MF%20%7C%20TF--IDF-orange.svg)](https://scikit-learn.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.2%2B-flat.svg)](https://scikit-learn.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-009688.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.22%2B-FF4B4B.svg)](https://streamlit.io/)
+[![Tests](https://img.shields.io/badge/Tests-20%2F20%20Passed-brightgreen.svg)](https://pytest.org/)
+[![Status](https://img.shields.io/badge/Status-Project%203%20Complete-success.svg)](#project-status)
 
----
-
-## 🚀 Key Features
-
-- **Multi-Model Recommendation Engine**:
-  - **Popularity Baseline**: Fast global ranking ($Rating \times Count$) with minimum interaction threshold ($\ge 5$) for cold users.
-  - **Collaborative Filtering**: User-based k-NN with sparse cosine similarity over explicit user-item ratings.
-  - **Matrix Factorization**: TruncatedSVD with 20 latent factor components.
-  - **Content-Based Filtering**: TF-IDF text vectorization on 201,325 catalog product titles with seed-based cosine matching.
-  - **Hybrid Orchestrator**: Balanced weighted combination (50% CF + 30% Content + 20% Popularity) with deterministic cold-start fallback.
-- **REST API**: Production FastAPI service (`/recommend/{user_id}`, `/health`, `/`) supporting dynamic model selection.
-- **Interactive Web App**: Streamlit dashboard with KPI metrics, exploratory rating/segment tabs, model dropdowns, and score distribution charts.
-- **Rigorous Leakage-Controlled Validation**: Non-temporal user-level 80/20 stratified holdout on 745k authentic records.
-- **Automated QA**: 20/20 passing Pytest test suite.
+An end-to-end, production-grade personalized product recommendation platform combining user-item collaborative filtering, matrix factorization, TF-IDF semantic title modeling, and popularity-aware ranking. Evaluated on **745,889 authentic Amazon review interactions** across **201,325 catalog products** and **2,000 active users**.
 
 ---
 
-## 📊 Offline Benchmark Results (1,999 Validation Users)
+## Table of Contents
 
-Evaluated under strict offline holdout (relevance: rating $\ge 4.0$):
+- [Overview](#overview)
+- [Key Capabilities](#key-capabilities)
+- [Key Results](#key-results)
+- [Dataset & Data Foundation](#dataset--data-foundation)
+- [Problem Statement](#problem-statement)
+- [System Architecture](#system-architecture)
+- [Recommendation Models](#recommendation-models)
+- [Evaluation Methodology](#evaluation-methodology)
+- [User Segmentation](#user-segmentation)
+- [Recommendation API](#recommendation-api)
+- [Interactive Streamlit Dashboard](#interactive-streamlit-dashboard)
+- [Visual Evidence & Output Artifacts](#visual-evidence--output-artifacts)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
+- [Installation & Setup](#installation--setup)
+- [Running the Application](#running-the-application)
+- [Testing & Quality Assurance](#testing--quality-assurance)
+- [Project Status](#project-status)
+- [Limitations](#limitations)
+- [Future Improvements](#future-improvements)
+- [License & Attribution](#license--attribution)
+
+---
+
+## Overview
+
+The **Personalized Product Recommendation System** is a complete machine learning solution designed to deliver relevant, high-quality product recommendations to e-commerce users. By unifying multiple recommendation paradigms into a single canonical engine, the system balances personalization accuracy, catalog coverage, and recommendation diversity.
+
+The core platform features a hybrid architecture combining:
+1. **User-kNN Collaborative Filtering** to capture user taste similarity across rating vectors.
+2. **TruncatedSVD Matrix Factorization** to uncover latent preference factors in low-dimensional space.
+3. **TF-IDF Content-Based Filtering** to match product title semantics against historical user interest vectors.
+4. **Popularity-Aware Baseline** to surface globally trending products and provide deterministic cold-start fallback.
+
+Built with production readiness in mind, the system exposes a high-throughput **FastAPI** REST interface for programmatic integration and a premium **Streamlit** dashboard featuring dark glassmorphism design, real-time model switching, rating analytics, and user activity segmentation.
+
+---
+
+## Key Capabilities
+
+1. **Authentic E-Commerce Data Foundation**: Built and validated on 745,889 explicit review interactions from the Monash University FIT5212 S1 2025 Recommender Challenge.
+2. **Multi-Model Recommendation Framework**: Implements 5 distinct algorithms—Popularity, Collaborative Filtering (User-kNN), Matrix Factorization (TruncatedSVD), Content-Based (TF-IDF), and a unified Hybrid engine.
+3. **Canonical Hybrid Recommender**: Blends collaborative (50%), content-based (30%), and popularity (20%) signals to maximize ranking accuracy while preserving catalog diversity.
+4. **Deterministic Cold-Start Handling**: Seamlessly detects cold/unseen users or items and falls back to popularity-ranked recommendations with explicit status tracking.
+5. **Rigorous Offline Ranking Evaluation**: Standardized evaluation protocol measuring Precision@K, Recall@K, and NDCG@K ($K \in \{5, 10, 20\}$) across 1,999 eligible users.
+6. **Empirical User Segmentation**: Analyzes model performance across user interaction volume tertiles (Low, Medium, High activity).
+7. **Production REST API**: Fully validated FastAPI web service supporting endpoint querying, health monitoring, and parameterized recommendation generation.
+8. **Interactive Glassmorphism Dashboard**: Streamlit web interface featuring dark-mode aesthetic, KPI telemetry, profile summaries, recommendation reason tracking, and interactive visualizations.
+
+---
+
+## Key Results
+
+Evaluation performed on the isolated validation split (**148,387 interactions** across **1,999 eligible users**; relevance threshold: $\text{rating} \ge 4.0$; previously seen items excluded):
+
+### Model Comparison Table
 
 | Model | P@5 | R@5 | NDCG@5 | P@10 | R@10 | NDCG@10 | P@20 | R@20 | NDCG@20 | Catalog Coverage | Diversity (1-Jaccard) |
-|---|---|---|---|---|---|---|---|---|---|---|---|
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | **Popularity Baseline** | 0.0345 | 0.0040 | 0.0424 | 0.0296 | 0.0069 | 0.0362 | 0.0218 | 0.0098 | 0.0286 | 78 | 0.2489 |
 | **Collaborative Filtering (User-kNN)** | **0.1975** | **0.0282** | **0.2116** | **0.1604** | **0.0440** | **0.1812** | **0.1215** | **0.0646** | **0.1481** | **7,259** | **0.9964** |
 | **Matrix Factorization (TruncatedSVD)** | 0.1129 | 0.0140 | 0.1207 | 0.0947 | 0.0230 | 0.1054 | 0.0747 | 0.0356 | 0.0882 | 961 | 0.9443 |
 | **Content-Based (TF-IDF)** | 0.0713 | 0.0109 | 0.0853 | 0.0466 | 0.0135 | 0.0634 | 0.0327 | 0.0177 | 0.0483 | 947 | 0.9424 |
-| **Hybrid Model (50% CF + 30% CB + 20% Pop)** | 0.1611 | 0.0226 | 0.1666 | 0.1393 | 0.0383 | 0.1494 | 0.1090 | 0.0577 | 0.1260 | 5,974 | 0.9581 |
+| **Hybrid Model (50/30/20)** | 0.1611 | 0.0226 | 0.1666 | 0.1393 | 0.0383 | 0.1494 | 0.1090 | 0.0577 | 0.1260 | 5,974 | 0.9581 |
 
-*Note: Temporal validation could not be performed because the authentic FIT5212 dataset contains no legitimate timestamp field.*
+### Key Observations
+- **User-kNN Collaborative Filtering** achieved the highest top-N precision and ranking accuracy (NDCG@10 = 0.1812) with exceptional catalog coverage (7,259 distinct items recommended).
+- **The Hybrid Engine** maintained strong competitive precision (NDCG@10 = 0.1494) while providing robust cold-start fallbacks and high recommendation diversity (0.9581).
+- **Automated Verification**: **20/20 test suites passing** across data foundation, model math, cold-start logic, API response validation, and segmentation.
 
 ---
 
-## 🏗️ Architecture & Project Structure
+## Dataset & Data Foundation
+
+### Data Specs
+- **Dataset Source**: Monash University FIT5212 S1 2025 Recommender System Challenge (Amazon Product Reviews dataset).
+- **Total Training Interactions**: **745,889** explicit review records (`data/raw/train_part1.csv` + `data/raw/train_part2.csv`).
+- **Unlabelled Test Pairs**: **223,553** test user-product pairs (`data/raw/test.csv`).
+- **Unique Users**: **2,000** registered user profiles.
+- **Unique Catalog Items**: **201,325** products with title metadata.
+- **Interaction Scale**: Explicit integer ratings $[1.0, 5.0]$ (Mean: 4.2387; 80.63% ratings $\ge 4.0$).
+
+### Validation Protocol
+- **Holdout Scheme**: Path B User-Level Stratified Holdout (597,502 training interactions, 148,387 validation interactions across 1,999 users, disjoint index sets, random seed 42).
+- **Relevance Benchmark**: Ratings $\ge 4.0$ indicate positive preference. Previously interacted items in training are strictly excluded from recommendation lists.
+
+---
+
+## Problem Statement
+
+E-commerce platforms face severe information overload: presenting users with hundreds of thousands of items leads to decision fatigue and reduced conversion. The core objective of this project is:
+
+> *Given a sparse matrix of user interaction histories and product title metadata, generate an accurate, diverse, and personalized top-N ranking of unseen products for any user, while gracefully handling sparse activity profiles and cold-start scenarios.*
+
+---
+
+## System Architecture
 
 ```text
-├── api/
-│   └── recommendation_api.py      # FastAPI REST service (/recommend/{user_id}, /health)
-├── app/
-│   └── streamlit_app.py           # Streamlit Web Analytics & Recommendation Dashboard
-├── config/
-│   └── config.py                  # Project thresholds, paths, random seeds
-├── data/
-│   ├── raw/                       # Authentic FIT5212 raw train (parts 1 & 2) and test.csv
-│   ├── interim/                   # Zero-leakage train_interactions.csv & val_interactions.csv
-│   └── processed/                 # interactions.csv, products.csv, popular_products.csv, users.csv
-├── docs/
-│   ├── FINAL_PROJECT_REPORT.md    # Master 15-section capstone report
-│   ├── TASK_TRACKER.md            # Execution tracker across all phases
-│   ├── ML_METHODOLOGY.md          # Machine learning algorithms & mathematics
-│   ├── EVALUATION_AND_ERROR_ANALYSIS.md # Evaluation metrics & diagnostic specs
-│   └── SYSTEM_ARCHITECTURE.md     # Software architecture & component contracts
-├── outputs/
-│   ├── reports/                   # evaluation_results.json, error_analysis.json, text reports
-│   └── tables/                    # model_comparison_table.csv, user_segment_summary.csv
-├── src/
-│   ├── analysis/                  # user_segment_analysis.py (Empirical activity tertiles)
-│   ├── data/                      # preprocess_data.py, split_data.py, acquire_data.py
-│   ├── evaluation/                # evaluate_recommendations.py (Multi-model evaluation runner)
-│   ├── models/                    # popularity, collaborative, matrix factorization, content, hybrid
-│   ├── recommendation/            # recommendation_engine.py (Canonical Unified Engine)
-│   └── utils/                     # data_utils.py
-└── tests/
-    ├── test_data_foundation.py    # Schema, domain, leakage, and registry tests
-    ├── test_models_and_api.py     # All 5 models, metric math, API endpoints, cold-start
-    └── test_recommendation.py     # RecommendationEngine interface tests
+                     ┌─────────────────────────────────────────┐
+                     │ FIT5212 Amazon Review Interaction Data  │
+                     │  (745,889 Interactions, 201,325 Items)  │
+                     └────────────────────┬────────────────────┘
+                                          │
+                                          ▼
+                     ┌─────────────────────────────────────────┐
+                     │ Data Validation & Preprocessing Pipeline│
+                     └────────────────────┬────────────────────┘
+                                          │
+                                          ▼
+                     ┌─────────────────────────────────────────┐
+                     │   User–Item Sparse Interaction Matrix   │
+                     └──────┬───────────┬───────────┬──────────┘
+                            │           │           │
+           ┌────────────────┘           │           └────────────────┐
+           ▼                            ▼                            ▼
+┌──────────────────────┐    ┌──────────────────────┐    ┌──────────────────────┐
+│  Popularity Model    │    │ User-kNN Collab.    │    │ TruncatedSVD Matrix  │
+│ (Rating x Count)     │    │ (Cosine Similarity)  │    │ Factorization (k=20) │
+└──────────┬───────────┘    └──────────┬───────────┘    └──────────┬───────────┘
+           │                           │                           │
+           └────────────────┐          │          ┌────────────────┘
+                            ▼          ▼          ▼
+                     ┌─────────────────────────────────────────┐
+                     │ TF-IDF Content Model (Title Features)   │
+                     └────────────────────┬────────────────────┘
+                                          │
+                                          ▼
+                     ┌─────────────────────────────────────────┐
+                     │      Hybrid Recommendation Engine       │
+                     │  (50% CF + 30% Content + 20% Popular)   │
+                     │    + Deterministic Cold-Start Logic     │
+                     └────────────────────┬────────────────────┘
+                                          │
+                        ┌─────────────────┴─────────────────┐
+                        ▼                                   ▼
+          ┌──────────────────────────┐        ┌──────────────────────────┐
+          │   FastAPI Service (/api) │        │ Streamlit Dashboard App  │
+          │  REST Endpoints & Client │        │ Interactive Glassmorphism│
+          └──────────────────────────┘        └──────────────────────────┘
 ```
 
 ---
 
-## ⚡ Quickstart
+## Recommendation Models
 
-### 1. Run Tests
+### 1. Popularity Baseline (`src/models/popularity_model.py`)
+Calculates global product importance using Bayesian-like product scoring:
+$$\text{Popularity Score} = \text{Average Rating} \times \text{Interaction Count}$$
+Filter threshold ($\ge 5$ interactions) guarantees baseline quality.
+
+### 2. Collaborative Filtering (`src/models/collaborative_filtering.py`)
+Computes memory-based User-kNN recommendations using sparse cosine similarity over mean-centered rating vectors:
+$$\text{Sim}(u, v) = \frac{\mathbf{r}_u \cdot \mathbf{r}_v}{\|\mathbf{r}_u\|_2 \|\mathbf{r}_v\|_2}$$
+Aggregates candidate item ratings across the top 10 nearest neighbors.
+
+### 3. Matrix Factorization (`src/models/matrix_factorization.py`)
+Applies Truncated Singular Value Decomposition (`TruncatedSVD`) with $k=20$ latent factors to project the sparse user-item matrix into dense embedding space:
+$$\mathbf{R} \approx \mathbf{U}_k \mathbf{\Sigma}_k \mathbf{V}_k^T$$
+Explains 28.48% of total rating variance while supporting fast dot-product score generation.
+
+### 4. Content-Based Recommender (`src/models/content_based.py`)
+Constructs a 30,000-dimensional TF-IDF feature space from catalog product titles. User profiles are created by averaging TF-IDF vectors of historically highly-rated products ($\text{rating} \ge 4.0$), ranking unseen products via cosine similarity.
+
+### 5. Canonical Hybrid Engine (`src/recommendation/recommendation_engine.py`)
+Unified engine combining normalized candidate scores across components:
+$$\text{Score}_{\text{Hybrid}} = 0.50 \cdot \mathbf{S}_{\text{CF}} + 0.30 \cdot \mathbf{S}_{\text{Content}} + 0.20 \cdot \mathbf{S}_{\text{Popularity}}$$
+Features automatic cold-start detection: if a user is unseen or has zero training interactions, the engine falls back to popularity ranking with explicit `recommendation_reason` metadata.
+
+---
+
+## Evaluation Methodology
+
+### Ranking Metrics
+- **Precision@K**: Fraction of top-K recommended items that are relevant ($\text{rating} \ge 4.0$).
+- **Recall@K**: Proportion of total relevant holdout items captured in top-K slates.
+- **NDCG@K**: Normalized Discounted Cumulative Gain penalizing relevant items placed lower in the ranking:
+$$\text{DCG}@K = \sum_{i=1}^K \frac{2^{\text{rel}_i} - 1}{\log_2(i + 1)}, \quad \text{NDCG}@K = \frac{\text{DCG}@K}{\text{IDCG}@K}$$
+
+> **Note on Temporal Validation**: The authentic Monash FIT5212 dataset contains no timestamp field. Consequently, time-based validation was not feasible. The evaluation protocol strictly enforces a non-temporal user-level holdout scheme across all 1,999 active users.
+
+---
+
+## User Segmentation
+
+Evaluation across empirical interaction activity tertiles derived from training distribution:
+
+| Activity Segment | Interactions Range | User Count | Mean Interactions | Hybrid P@10 | Hybrid NDCG@10 | Baseline P@10 |
+|---|---|---|---|---|---|---|
+| **Low Activity** | $\le 146$ | 676 | 126.3 | **0.1357** | **0.1554** | 0.0187 |
+| **Medium Activity** | $147 - 224$ | 662 | 179.3 | **0.1562** | **0.1713** | 0.0227 |
+| **High Activity** | $> 224$ | 662 | 594.3 | **0.1875** | **0.2004** | 0.0477 |
+
+---
+
+## Recommendation API
+
+Built with **FastAPI**, the REST service provides lightweight recommendation serving.
+
+### Endpoints
+- `GET /`: Returns service metadata, system status, and active model weights.
+- `GET /health`: System health check, active user count (2,000), and total catalog size (201,325).
+- `GET /recommend/{user_id}?n=10&model=hybrid`: Parameterized recommendation endpoint.
+
+### Example Request & Response
+```bash
+curl -X GET "http://localhost:8000/recommend/1813?n=3&model=hybrid"
+```
+
+```json
+{
+  "user_id": "1813",
+  "model_used": "hybrid",
+  "is_known_user": true,
+  "recommendations": [
+    {
+      "rank": 1,
+      "product_id": "B0000523SY",
+      "product_name": "Harry Potter and the Prisoner of Azkaban (Book 3, Audio)",
+      "score": 0.6421,
+      "recommendation_reason": "Hybrid: 50% collaborative + 30% content + 20% popularity"
+    },
+    {
+      "rank": 2,
+      "product_id": "B00005NKN2",
+      "product_name": "John Adams",
+      "score": 0.5810,
+      "recommendation_reason": "Hybrid: 50% collaborative + 30% content + 20% popularity"
+    }
+  ]
+}
+```
+
+---
+
+## Interactive Streamlit Dashboard
+
+The Streamlit dashboard (`app/streamlit_app.py`) provides an intuitive visual interface:
+
+- **Hero Header**: Dark glassmorphism banner with status indicators.
+- **Telemetry KPI Cards**: Real-time display of total users (2,000), catalog products (201,325), training interactions (745,889), and active models (5).
+- **Personalized Target Profile**: Displays user history count, unique products, and historical mean rating.
+- **Top-N Recommendation Slates**: Product ranking cards showing rank badges, model confidence scores, and recommendation reasons.
+- **Score Distribution Charts**: Interactive Altair visual rank analysis.
+- **Analytical Tabs**: Rating intelligence distributions, user activity segment comparisons, and top popular product tables.
+
+---
+
+## Visual Evidence & Output Artifacts
+
+Key generated figures and evidence tables from execution runs:
+
+| Output Artifact | Description |
+|---|---|
+| `outputs/figures/popular.png` | Global Product Popularity & Rating Distribution |
+| `outputs/figures/rec_score.png` | Model Score Distribution & Ranking Spread |
+| `outputs/figures/recommen_ana.png` | Recommendation Analytics & Coverage Curves |
+| `outputs/tables/popular_prod_table.png` | Champion Product Leaderboard |
+| `outputs/tables/rec_prod_table.png` | Recommendation Output Slate |
+| `outputs/tables/model_comparison_table.csv` | Full Metric Benchmark Matrix |
+
+---
+
+## Project Structure
+
+```text
+personalized_product_recommendation/
+│
+├── api/
+│   └── recommendation_api.py          # FastAPI REST endpoints
+│
+├── app/
+│   └── streamlit_app.py               # Glassmorphism Streamlit UI
+│
+├── config/
+│   └── config.py                      # Global paths & hyperparameter defaults
+│
+├── data/
+│   ├── raw/                           # Raw FIT5212 Amazon review datasets
+│   ├── interim/                       # Train/Val 80/20 user holdout splits
+│   └── processed/                     # Formatted interaction tables & metadata
+│
+├── outputs/
+│   ├── figures/                       # Evaluation & score distribution plots
+│   ├── reports/                       # Metric JSONs & evaluation text summaries
+│   └── tables/                        # CSV benchmark tables & PNG figures
+│
+├── src/
+│   ├── analysis/                      # User activity segmentation scripts
+│   ├── data/                          # Data cleaning, splitting & validation
+│   ├── evaluation/                    # Precision, Recall, NDCG evaluation engine
+│   ├── models/                        # Popularity, CF, SVD, & TF-IDF models
+│   └── recommendation/                # Canonical RecommendationEngine orchestrator
+│
+├── tests/
+│   ├── test_data_foundation.py        # Schema & split validation tests
+│   ├── test_models_and_api.py         # Model math, cold-start & API tests
+│   └── test_recommendation.py         # Recommendation Engine contract tests
+│
+├── metadata.json                      # Applet configuration metadata
+├── package.json                       # Package manifest
+├── README.md                          # Master public repository documentation
+└── requirements.txt                   # Unpinned Python dependencies
+```
+
+---
+
+## Technology Stack
+
+- **Core Runtime**: Python 3.10+
+- **Data Engineering**: Pandas, NumPy, SciPy
+- **Machine Learning**: scikit-learn (`TruncatedSVD`, `TfidfVectorizer`, Cosine Similarity)
+- **API Framework**: FastAPI, Uvicorn, Pydantic
+- **Dashboard UI**: Streamlit, Altair
+- **Testing & QA**: Pytest, FastAPI TestClient
+
+---
+
+## Installation & Setup
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/theOnlyIngeniousAnurag/personalized_product_recommendation.git
+   cd personalized_product_recommendation
+   ```
+
+2. **Create and Activate Virtual Environment**:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+---
+
+## Running the Application
+
+### 1. Launch Streamlit Dashboard
+```bash
+streamlit run app/streamlit_app.py --server.port 3000
+```
+Open browser at `http://localhost:3000`.
+
+### 2. Launch FastAPI Service
+```bash
+uvicorn api.recommendation_api:app --host 0.0.0.0 --port 8000
+```
+API Documentation available at `http://localhost:8000/docs`.
+
+---
+
+## Testing & Quality Assurance
+
+Execute the complete automated test suite:
+
 ```bash
 python3 -m pytest -v
 ```
 
-### 2. Run Comprehensive Model Evaluation
-```bash
-python3 src/evaluation/evaluate_recommendations.py
+### Test Results
+```text
+============================== 20 passed in 18.20s ==============================
+tests/test_data_foundation.py .....                                     [ 25%]
+tests/test_models_and_api.py .........                                  [ 70%]
+tests/test_recommendation.py ......                                     [100%]
 ```
 
-### 3. Run User Segment Analysis
-```bash
-python3 src/analysis/user_segment_analysis.py
-```
+---
 
-### 4. Launch FastAPI REST Service
-```bash
-uvicorn api.recommendation_api:app --host 0.0.0.0 --port 8000
-```
-Query recommendations:
-```bash
-curl "http://localhost:8000/recommend/1813?n=5&model=hybrid"
-```
+## Project Status
 
-### 5. Launch Streamlit Dashboard
-```bash
-streamlit run app/streamlit_app.py --server.port 3000
-```
-Visit `http://localhost:3000` to interact with the dashboard.
+### Overall Status: PROJECT 3 — COMPLETE
+
+- [x] **Data Foundation & Cleaning**: 745,889 authentic review interactions loaded & verified.
+- [x] **Data Splitting**: Path B User-Level Stratified Holdout (80/20 train/val).
+- [x] **Popularity Baseline**: Implemented with rating x interaction count scoring.
+- [x] **Collaborative Filtering**: Memory-based User-kNN cosine recommender.
+- [x] **Matrix Factorization**: Latent factor SVD recommender ($k=20$).
+- [x] **Content-Based Model**: Title TF-IDF cosine similarity recommender.
+- [x] **Canonical Hybrid Engine**: Unified 50/30/20 weighted orchestrator with cold-start fallback.
+- [x] **Offline Ranking Metrics**: P@K, R@K, NDCG@K evaluation across 1,999 users.
+- [x] **User Segmentation**: Empirical interaction tertile analysis.
+- [x] **FastAPI Service**: Production REST API endpoints with status validation.
+- [x] **Streamlit UI**: Premium dark glassmorphism analytics & recommendation app.
+- [x] **Automated QA**: 20/20 passing pytest suite.
+- [x] **Portfolio Packaging**: Clean repository structure & complete documentation.
+
+---
+
+## Limitations
+
+1. **Absence of Timestamps**: The authentic Monash FIT5212 dataset contains no timestamp field, preventing temporal train/val splitting and time-decayed similarity modeling.
+2. **Explicit Ratings Only**: Interactions consist strictly of 1–5 integer ratings without implicit event logs (clicks, add-to-carts, page views).
+3. **Title-Only Metadata**: Item features are derived exclusively from product titles without category taxonomies, brand names, or image representations.
+
+---
+
+## Future Improvements
+
+- **Implicit Feedback Integration**: Incorporate clickstream and session logs to train pairwise ranking loss models (e.g., BPR, WARP).
+- **Deep Neural Recommendations**: Explore Neural Collaborative Filtering (NCF) and Two-Tower DNN architectures.
+- **Richer Metadata Embeddings**: Leverage Transformer text embeddings (e.g., Sentence-BERT) on full item descriptions.
+- **Real-Time A/B Testing**: Deploy online bandit algorithms to optimize hybrid component weights dynamically.
+
+---
+
+## License & Attribution
+
+- **Dataset**: Monash University FIT5212 S1 2025 Recommender Challenge (Amazon Product Reviews).
+- **License**: MIT License. Free for educational, research, and non-commercial portfolio use.
