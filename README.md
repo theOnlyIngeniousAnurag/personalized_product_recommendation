@@ -22,10 +22,11 @@ An end-to-end, production-grade personalized product recommendation platform com
 - [System Architecture](#system-architecture)
 - [Recommendation Models](#recommendation-models)
 - [Evaluation Methodology](#evaluation-methodology)
+- [Benchmark Results](#benchmark-results)
 - [User Segmentation](#user-segmentation)
 - [Recommendation API](#recommendation-api)
 - [Interactive Streamlit Dashboard](#interactive-streamlit-dashboard)
-- [Visual Evidence & Output Artifacts](#visual-evidence--output-artifacts)
+- [Application Screenshots](#application-screenshots)
 - [Project Structure](#project-structure)
 - [Technology Stack](#technology-stack)
 - [Installation & Setup](#installation--setup)
@@ -55,21 +56,19 @@ Built with production readiness in mind, the system exposes a high-throughput **
 ## Key Capabilities
 
 1. **Authentic E-Commerce Data Foundation**: Built and validated on 745,889 explicit review interactions from the Monash University FIT5212 S1 2025 Recommender Challenge.
-2. **Multi-Model Recommendation Framework**: Implements 5 distinct algorithms—Popularity, Collaborative Filtering (User-kNN), Matrix Factorization (TruncatedSVD), Content-Based (TF-IDF), and a unified Hybrid engine.
-3. **Canonical Hybrid Recommender**: Blends collaborative (50%), content-based (30%), and popularity (20%) signals to maximize ranking accuracy while preserving catalog diversity.
-4. **Deterministic Cold-Start Handling**: Seamlessly detects cold/unseen users or items and falls back to popularity-ranked recommendations with explicit status tracking.
+2. **Multiple Recommender Frameworks**: Implements 5 distinct algorithms—Popularity, Collaborative Filtering (User-kNN), Matrix Factorization (TruncatedSVD), Content-Based (TF-IDF), and a unified Hybrid engine.
+3. **Canonical Hybrid Recommender Engine**: Blends collaborative (50%), content-based (30%), and popularity (20%) signals to maximize ranking accuracy while preserving catalog diversity.
+4. **Deterministic Cold-Start Fallback**: Seamlessly detects cold/unseen users or items and falls back to popularity-ranked recommendations with explicit status tracking.
 5. **Rigorous Offline Ranking Evaluation**: Standardized evaluation protocol measuring Precision@K, Recall@K, and NDCG@K ($K \in \{5, 10, 20\}$) across 1,999 eligible users.
-6. **Empirical User Segmentation**: Analyzes model performance across user interaction volume tertiles (Low, Medium, High activity).
-7. **Production REST API**: Fully validated FastAPI web service supporting endpoint querying, health monitoring, and parameterized recommendation generation.
-8. **Interactive Glassmorphism Dashboard**: Streamlit web interface featuring dark-mode aesthetic, KPI telemetry, profile summaries, recommendation reason tracking, and interactive visualizations.
+6. **Empirical User Activity Segmentation**: Analyzes model performance across user interaction volume tertiles (Low, Medium, High activity).
+7. **Production FastAPI Service**: Fully validated FastAPI web service supporting endpoint querying, health monitoring, and parameterized recommendation generation.
+8. **Interactive Streamlit Dashboard**: Streamlit web interface featuring dark-mode aesthetic, KPI telemetry, profile summaries, recommendation reason tracking, and interactive visualizations.
 
 ---
 
 ## Key Results
 
 Evaluation performed on the isolated validation split (**148,387 interactions** across **1,999 eligible users**; relevance threshold: $\text{rating} \ge 4.0$; previously seen items excluded):
-
-### Model Comparison Table
 
 | Model | P@5 | R@5 | NDCG@5 | P@10 | R@10 | NDCG@10 | P@20 | R@20 | NDCG@20 | Catalog Coverage | Diversity (1-Jaccard) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -79,26 +78,29 @@ Evaluation performed on the isolated validation split (**148,387 interactions** 
 | **Content-Based (TF-IDF)** | 0.0713 | 0.0109 | 0.0853 | 0.0466 | 0.0135 | 0.0634 | 0.0327 | 0.0177 | 0.0483 | 947 | 0.9424 |
 | **Hybrid Model (50/30/20)** | 0.1611 | 0.0226 | 0.1666 | 0.1393 | 0.0383 | 0.1494 | 0.1090 | 0.0577 | 0.1260 | 5,974 | 0.9581 |
 
-### Key Observations
-- **User-kNN Collaborative Filtering** achieved the highest top-N precision and ranking accuracy (NDCG@10 = 0.1812) with exceptional catalog coverage (7,259 distinct items recommended).
-- **The Hybrid Engine** maintained strong competitive precision (NDCG@10 = 0.1494) while providing robust cold-start fallbacks and high recommendation diversity (0.9581).
-- **Automated Verification**: **20/20 test suites passing** across data foundation, model math, cold-start logic, API response validation, and segmentation.
+### Summary Metrics
+- **Collaborative Filtering Catalog Coverage**: 7,259 unique products
+- **Matrix Factorization Catalog Coverage**: 961 unique products
+- **Content-Based Catalog Coverage**: 947 unique products
+- **Hybrid Catalog Coverage**: 5,974 unique products
+- **Hybrid Inter-User Diversity (1 - Jaccard Similarity)**: 0.9581
+- **Automated QA Verification**: 20/20 pytest tests passing
 
 ---
 
 ## Dataset & Data Foundation
 
 ### Data Specs
-- **Dataset Source**: Monash University FIT5212 S1 2025 Recommender System Challenge (Amazon Product Reviews dataset).
-- **Total Training Interactions**: **745,889** explicit review records (`data/raw/train_part1.csv` + `data/raw/train_part2.csv`).
-- **Unlabelled Test Pairs**: **223,553** test user-product pairs (`data/raw/test.csv`).
-- **Unique Users**: **2,000** registered user profiles.
-- **Unique Catalog Items**: **201,325** products with title metadata.
-- **Interaction Scale**: Explicit integer ratings $[1.0, 5.0]$ (Mean: 4.2387; 80.63% ratings $\ge 4.0$).
+- **Source**: Monash University FIT5212 S1 2025 Recommender System Challenge (Amazon Product Reviews dataset).
+- **Training Records**: **745,889** authentic review interactions (`data/raw/train_part1.csv` + `data/raw/train_part2.csv`).
+- **Test Records**: **223,553** unlabelled test user-product pairs (`data/raw/test.csv`).
+- **Active Users**: **2,000** registered user profiles.
+- **Catalog Items**: **201,325** products with title metadata.
+- **Interaction Type**: Explicit integer ratings $[1.0, 5.0]$ (Mean: 4.2387; 80.63% ratings $\ge 4.0$).
 
 ### Validation Protocol
 - **Holdout Scheme**: Path B User-Level Stratified Holdout (597,502 training interactions, 148,387 validation interactions across 1,999 users, disjoint index sets, random seed 42).
-- **Relevance Benchmark**: Ratings $\ge 4.0$ indicate positive preference. Previously interacted items in training are strictly excluded from recommendation lists.
+- **Relevance Definition**: `rating >= 4.0` indicates positive preference for ranking evaluation. Previously interacted items in training are strictly excluded.
 
 ---
 
@@ -197,6 +199,16 @@ $$\text{DCG}@K = \sum_{i=1}^K \frac{2^{\text{rel}_i} - 1}{\log_2(i + 1)}, \quad 
 
 ---
 
+## Benchmark Results
+
+Full metric breakdown across model architectures evaluated at $K \in \{5, 10, 20\}$:
+
+- **Top Precision Model**: User-kNN Collaborative Filtering achieved highest P@5 (0.1975) and P@10 (0.1604), demonstrating that user similarity is the strongest single predictor of rating affinity in this dataset.
+- **Top Latent Model**: TruncatedSVD Matrix Factorization ($k=20$) achieved solid performance (P@10 = 0.0947, NDCG@10 = 0.1054) while maintaining compact memory footprints.
+- **Hybrid Trade-off**: The 50/30/20 Hybrid model achieved NDCG@10 = 0.1494 while expanding catalog coverage to 5,974 products and ensuring robust cold-start fallbacks.
+
+---
+
 ## User Segmentation
 
 Evaluation across empirical interaction activity tertiles derived from training distribution:
@@ -262,18 +274,47 @@ The Streamlit dashboard (`app/streamlit_app.py`) provides an intuitive visual in
 
 ---
 
-## Visual Evidence & Output Artifacts
+## Application Screenshots
 
-Key generated figures and evidence tables from execution runs:
+> The completed system includes an interactive Streamlit recommendation workspace that combines personalized ranking, recommendation-score analysis, user activity segmentation, rating intelligence, and catalog popularity analysis. The following screenshots capture the final implemented application and its major analytical views.
 
-| Output Artifact | Description |
-|---|---|
-| `outputs/figures/popular.png` | Global Product Popularity & Rating Distribution |
-| `outputs/figures/rec_score.png` | Model Score Distribution & Ranking Spread |
-| `outputs/figures/recommen_ana.png` | Recommendation Analytics & Coverage Curves |
-| `outputs/tables/popular_prod_table.png` | Champion Product Leaderboard |
-| `outputs/tables/rec_prod_table.png` | Recommendation Output Slate |
-| `outputs/tables/model_comparison_table.csv` | Full Metric Benchmark Matrix |
+### 1. Personalized Recommendation Dashboard
+
+![Personalized Product Recommendation Dashboard](screenshots/01_recommendation_dashboard.png)
+
+*The primary recommendation workspace displaying the dark glassmorphism UI, sidebar control panel, real-time KPI metrics (2,000 users, 201,325 catalog items, 745,889 review interactions), user profile summary for User 1813, model selector, top-N recommendation slates with confidence scores, and hybrid signal explanations.*
+
+---
+
+### 2. Recommendation Ranking & Score Distribution
+
+![Recommendation Ranking and Score Distribution](screenshots/02_recommendation_ranking.png)
+
+*Visual rank analysis displaying recommended products alongside an interactive score distribution chart, highlighting the relative confidence decay across top-ranked candidate products.*
+
+---
+
+### 3. Rating Intelligence
+
+![Rating Intelligence Dashboard](screenshots/03_rating_intelligence.png)
+
+*The Rating Intelligence view presenting empirical interaction statistics across the 745,889 authentic review dataset, showing rating frequency distributions and summary rating metrics (Mean: 4.24 ★, Max: 5.0 ★, Min: 1.0 ★).*
+
+---
+
+### 4. User Activity Segmentation
+
+![User Activity Segmentation](screenshots/04_user_segments.png)
+
+*The User Activity Segmentation workspace displaying user distribution and recommendation performance across empirical interaction tertiles (Low Activity $\le 146$, Medium Activity $147–224$, High Activity $>224$).*
+
+---
+
+### 5. Popular Product Intelligence
+
+![Popular Products Intelligence](screenshots/05_popular_products.png)
+
+*The Popular Product Discovery panel showcasing top catalog items ranked by Bayesian product popularity scores ($\text{Average Rating} \times \text{Interaction Count}$), including top champion podium cards and full leaderboard tables.*
 
 ---
 
@@ -300,6 +341,13 @@ personalized_product_recommendation/
 │   ├── figures/                       # Evaluation & score distribution plots
 │   ├── reports/                       # Metric JSONs & evaluation text summaries
 │   └── tables/                        # CSV benchmark tables & PNG figures
+│
+├── screenshots/                       # Dashboard application screenshots
+│   ├── 01_recommendation_dashboard.png
+│   ├── 02_recommendation_ranking.png
+│   ├── 03_rating_intelligence.png
+│   ├── 04_user_segments.png
+│   └── 05_popular_products.png
 │
 ├── src/
 │   ├── analysis/                      # User activity segmentation scripts
@@ -379,7 +427,7 @@ python3 -m pytest -v
 
 ### Test Results
 ```text
-============================== 20 passed in 18.20s ==============================
+============================== 20 passed in 18.62s ==============================
 tests/test_data_foundation.py .....                                     [ 25%]
 tests/test_models_and_api.py .........                                  [ 70%]
 tests/test_recommendation.py ......                                     [100%]
