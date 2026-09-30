@@ -1,0 +1,4 @@
+Segment,Users Evaluated,Pop P@10,Pop R@10,Pop NDCG@10,Pop Catalog Coverage,Hybrid P@10,Hybrid R@10,Hybrid NDCG@10,Hybrid Catalog Coverage
+Low Activity,675,0.0187,0.008,0.0228,24,0.1357,0.0582,0.1554,2724
+Medium Activity,662,0.0227,0.0065,0.0259,24,0.1562,0.0461,0.1713,2668
+High Activity,662,0.0477,0.0062,0.0601,42,0.1875,0.027,0.2004,2420

@@ -1,120 +1,147 @@
 """
-Train / Validation / Test Data Foundation Split Module
-Project 3: Personalized Product Recommendation Model
-Strategy: Path B — User-Level Stratified Holdout (Non-Temporal)
+Temporal Splitting Module
+Implements leakage-safe chronological train/validation/test splits based on authentic timestamps.
 """
 
 import os
 import json
 import pandas as pd
-import numpy as np
+from datetime import datetime, timezone
 from pathlib import Path
+from config.config import (
+    PROCESSED_INTERACTIONS,
+    TRAIN_INTERACTIONS,
+    VAL_INTERACTIONS,
+    TEST_INTERACTIONS,
+    REPORTS_DIR,
+)
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-PROCESSED_DIR = BASE_DIR / "data" / "processed"
-INTERIM_DIR = BASE_DIR / "data" / "interim"
-AUDIT_DIR = BASE_DIR / "outputs" / "reports"
-
-
-def split_user_holdout(
-    interactions_df: pd.DataFrame,
-    test_ratio: float = 0.2,
-    min_interactions: int = 5,
-    random_state: int = 42
-) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+def create_temporal_split(val_days: int = 14, test_days: int = 14):
     """
-    Performs a deterministic, reproducible user-level holdout split.
+    Split interactions chronologically into Train, Validation, and Test partitions.
     
-    For users with at least `min_interactions`, `test_ratio` of their
-    interactions are held out for ranking evaluation. Users with fewer
-    than `min_interactions` have all their interactions placed in the
-    training set to avoid unrepresentative zero/single-item evaluation sets.
-    
-    Leakage Controls:
-    - Train and validation sets are strictly disjoint (intersection = empty).
-    - Ratings of 4 or 5 in the validation set serve as ground-truth relevant items.
+    Parameters:
+    -----------
+    val_days : int
+        Duration in days for the validation period immediately preceding the test period.
+    test_days : int
+        Duration in days for the test period at the end of the observation window.
     """
-    rng = np.random.RandomState(random_state)
+    print("\n[SPLIT] Ingesting canonical interactions for temporal splitting...")
+    df = pd.read_csv(PROCESSED_INTERACTIONS)
     
-    train_indices = []
-    val_indices = []
-    
-    user_counts = interactions_df.groupby("user_id").size()
-    eligible_users = set(user_counts[user_counts >= min_interactions].index)
-    
-    for user_id, group in interactions_df.groupby("user_id"):
-        indices = group.index.tolist()
-        if user_id in eligible_users:
-            rng.shuffle(indices)
-            n_val = max(1, int(len(indices) * test_ratio))
-            val_indices.extend(indices[:n_val])
-            train_indices.extend(indices[n_val:])
-        else:
-            train_indices.extend(indices)
-            
-    train_df = interactions_df.loc[train_indices].copy()
-    val_df = interactions_df.loc[val_indices].copy()
-    
-    # Leakage check: disjoint indices
-    assert len(set(train_indices).intersection(set(val_indices))) == 0, "Leakage detected: overlapping indices"
-    
-    # Compute split metadata
-    stats = {
-        "split_strategy": "Path B: User-Level Stratified Holdout (Non-Temporal)",
-        "random_state": random_state,
-        "test_ratio": test_ratio,
-        "min_interactions_threshold": min_interactions,
-        "total_interactions": len(interactions_df),
-        "train_interactions": len(train_df),
-        "val_interactions": len(val_df),
-        "unique_users_total": int(interactions_df["user_id"].nunique()),
-        "unique_users_train": int(train_df["user_id"].nunique()),
-        "eligible_eval_users": int(val_df["user_id"].nunique()),
-        "unique_products_train": int(train_df["product_id"].nunique()),
-        "unique_products_val": int(val_df["product_id"].nunique()),
-        "new_products_in_val": int(len(set(val_df["product_id"]) - set(train_df["product_id"]))),
-        "val_relevant_items_count": int((val_df["rating"] >= 4).sum()),
-        "val_relevant_ratio": float(round((val_df["rating"] >= 4).mean(), 4))
+    # Verify chronological sorting
+    if not df["timestamp"].is_monotonic_increasing:
+        df.sort_values(by="timestamp", inplace=True)
+        df.reset_index(drop=True, inplace=True)
+
+    min_ts = df["timestamp"].min()
+    max_ts = df["timestamp"].max()
+
+    # Calculate cutoff timestamps in milliseconds
+    ms_per_day = 86400 * 1000
+    test_cutoff_ts = max_ts - (test_days * ms_per_day)
+    val_cutoff_ts = test_cutoff_ts - (val_days * ms_per_day)
+
+    train_df = df[df["timestamp"] < val_cutoff_ts].copy()
+    val_df = df[(df["timestamp"] >= val_cutoff_ts) & (df["timestamp"] < test_cutoff_ts)].copy()
+    test_df = df[df["timestamp"] >= test_cutoff_ts].copy()
+
+    # Save partitions
+    os.makedirs(TRAIN_INTERACTIONS.parent, exist_ok=True)
+    train_df.to_csv(TRAIN_INTERACTIONS, index=False)
+    val_df.to_csv(VAL_INTERACTIONS, index=False)
+    test_df.to_csv(TEST_INTERACTIONS, index=False)
+
+    print(f"  ✓ Train Partition: {len(train_df):,} rows")
+    print(f"  ✓ Validation Partition: {len(val_df):,} rows")
+    print(f"  ✓ Test Partition: {len(test_df):,} rows")
+
+    # Analyze User and Item Overlap (Warm vs Cold)
+    train_users = set(train_df["user_id"].unique())
+    val_users = set(val_df["user_id"].unique())
+    test_users = set(test_df["user_id"].unique())
+
+    train_items = set(train_df["item_id"].unique())
+    val_items = set(val_df["item_id"].unique())
+    test_items = set(test_df["item_id"].unique())
+
+    val_warm_users = len(val_users.intersection(train_users))
+    val_cold_users = len(val_users - train_users)
+    test_warm_users = len(test_users.intersection(train_users))
+    test_cold_users = len(test_users - train_users)
+
+    val_warm_items = len(val_items.intersection(train_items))
+    val_cold_items = len(val_items - train_items)
+    test_warm_items = len(test_items.intersection(train_items))
+    test_cold_items = len(test_items - train_items)
+
+    # Leakage Verifications:
+    train_max_ts = int(train_df["timestamp"].max())
+    val_min_ts = int(val_df["timestamp"].min())
+    val_max_ts = int(val_df["timestamp"].max())
+    test_min_ts = int(test_df["timestamp"].min())
+    test_max_ts = int(test_df["timestamp"].max())
+
+    rule_a_pass = train_max_ts < val_min_ts
+    rule_b_pass = val_max_ts < test_min_ts
+
+    split_audit = {
+        "dataset_min_ts": int(min_ts),
+        "dataset_max_ts": int(max_ts),
+        "val_cutoff_ts": int(val_cutoff_ts),
+        "test_cutoff_ts": int(test_cutoff_ts),
+        "train": {
+            "rows": len(train_df),
+            "users": len(train_users),
+            "items": len(train_items),
+            "min_ts": train_max_ts if len(train_df) == 0 else int(train_df["timestamp"].min()),
+            "max_ts": train_max_ts,
+            "min_dt": datetime.fromtimestamp(int(train_df["timestamp"].min()) / 1000.0, tz=timezone.utc).isoformat(),
+            "max_dt": datetime.fromtimestamp(train_max_ts / 1000.0, tz=timezone.utc).isoformat(),
+        },
+        "validation": {
+            "rows": len(val_df),
+            "users": len(val_users),
+            "items": len(val_items),
+            "min_ts": val_min_ts,
+            "max_ts": val_max_ts,
+            "min_dt": datetime.fromtimestamp(val_min_ts / 1000.0, tz=timezone.utc).isoformat(),
+            "max_dt": datetime.fromtimestamp(val_max_ts / 1000.0, tz=timezone.utc).isoformat(),
+            "warm_users": val_warm_users,
+            "cold_users": val_cold_users,
+            "warm_items": val_warm_items,
+            "cold_items": val_cold_items,
+        },
+        "test": {
+            "rows": len(test_df),
+            "users": len(test_users),
+            "items": len(test_items),
+            "min_ts": test_min_ts,
+            "max_ts": test_max_ts,
+            "min_dt": datetime.fromtimestamp(test_min_ts / 1000.0, tz=timezone.utc).isoformat(),
+            "max_dt": datetime.fromtimestamp(test_max_ts / 1000.0, tz=timezone.utc).isoformat(),
+            "warm_users": test_warm_users,
+            "cold_users": test_cold_users,
+            "warm_items": test_warm_items,
+            "cold_items": test_cold_items,
+        },
+        "leakage_verification": {
+            "rule_a_train_before_val": bool(rule_a_pass),
+            "rule_b_val_before_test": bool(rule_b_pass),
+            "strict_chronological_ordering": bool(rule_a_pass and rule_b_pass),
+        }
     }
-    
-    return train_df, val_df, stats
 
+    os.makedirs(REPORTS_DIR, exist_ok=True)
+    audit_file = REPORTS_DIR / "data_split_audit.json"
+    with open(audit_file, "w") as f:
+        json.dump(split_audit, f, indent=2)
 
-def execute_split():
-    input_path = PROCESSED_DIR / "interactions.csv"
-    if not input_path.exists():
-        raise FileNotFoundError(f"Missing processed interactions: {input_path}")
-        
-    print("=" * 60)
-    print("EXECUTING PATH B USER-LEVEL HOLDOUT SPLIT")
-    print("=" * 60)
-    
-    interactions = pd.read_csv(input_path)
-    train_df, val_df, stats = split_user_holdout(interactions)
-    
-    INTERIM_DIR.mkdir(parents=True, exist_ok=True)
-    AUDIT_DIR.mkdir(parents=True, exist_ok=True)
-    
-    train_out = INTERIM_DIR / "train_interactions.csv"
-    val_out = INTERIM_DIR / "val_interactions.csv"
-    audit_out = AUDIT_DIR / "data_split_audit.json"
-    
-    train_df.to_csv(train_out, index=False)
-    val_df.to_csv(val_out, index=False)
-    
-    with open(audit_out, "w", encoding="utf-8") as f:
-        json.dump(stats, f, indent=2)
-        
-    print(f"Total interactions:       {stats['total_interactions']:,}")
-    print(f"Train split interactions: {stats['train_interactions']:,} ({stats['train_interactions'] / stats['total_interactions'] * 100:.1f}%)")
-    print(f"Val split interactions:   {stats['val_interactions']:,} ({stats['val_interactions'] / stats['total_interactions'] * 100:.1f}%)")
-    print(f"Eligible eval users:      {stats['eligible_eval_users']:,} / {stats['unique_users_total']:,}")
-    print(f"Val ground-truth items:   {stats['val_relevant_items_count']:,} (Ratings >= 4, {stats['val_relevant_ratio']*100:.1f}%)")
-    print(f"Saved train interactions: {train_out}")
-    print(f"Saved val interactions:   {val_out}")
-    print(f"Saved split audit log:    {audit_out}")
-    print("=" * 60)
-
+    print(f"\n[AUDIT] Saved split audit to {audit_file}")
+    print(f"  ✓ Rule A (Train < Val): {'PASS' if rule_a_pass else 'FAIL'}")
+    print(f"  ✓ Rule B (Val < Test): {'PASS' if rule_b_pass else 'FAIL'}")
+    return split_audit
 
 if __name__ == "__main__":
-    execute_split()
+    create_temporal_split()

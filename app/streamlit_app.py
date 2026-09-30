@@ -39,15 +39,18 @@ st.divider()
 def load_data():
 
     interactions = pd.read_csv(
-        "data/processed/interactions.csv"
+        "data/processed/interactions.csv",
+        dtype={"user_id": str, "product_id": str}
     )
 
     products = pd.read_csv(
-        "data/processed/products.csv"
+        "data/processed/products.csv",
+        dtype={"product_id": str}
     )
 
     popular_products = pd.read_csv(
-        "data/processed/popular_products.csv"
+        "data/processed/popular_products.csv",
+        dtype={"product_id": str}
     )
 
     return (
@@ -81,272 +84,53 @@ products["product_text"] = (
 
 
 # ============================================================
-# TF-IDF
+# CANONICAL RECOMMENDATION ENGINE INTEGRATION
 # ============================================================
+
+import sys
+from pathlib import Path
+_project_root = Path(__file__).resolve().parents[1]
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
+from src.recommendation.recommendation_engine import RecommendationEngine
 
 @st.cache_resource
-def create_tfidf(products):
+def get_recommendation_engine():
+    return RecommendationEngine()
 
-    vectorizer = TfidfVectorizer(
-        stop_words="english",
-        max_features=30000
-    )
+engine = get_recommendation_engine()
 
-    matrix = vectorizer.fit_transform(
-        products["product_text"]
-    )
-
-    return vectorizer, matrix
-
-
-vectorizer, tfidf_matrix = create_tfidf(
-    products
-)
-
-
-# ============================================================
-# PRODUCT INDEX
-# ============================================================
-
-product_index = {
-    product_id: index
-    for index, product_id
-    in enumerate(products["product_id"])
-}
-
-
-# ============================================================
-# NORMALIZE SCORES
-# ============================================================
-
-def normalize_scores(scores):
-
-    if not scores:
-        return {}
-
-    values = np.array(
-        list(scores.values()),
-        dtype=float
-    )
-
-    minimum = values.min()
-    maximum = values.max()
-
-    if maximum == minimum:
-
-        return {
-            key: 1.0
-            for key in scores
-        }
-
-    return {
-        key: (
-            value - minimum
-        ) / (
-            maximum - minimum
-        )
-        for key, value in scores.items()
-    }
-
-
-# ============================================================
-# RECOMMENDATION FUNCTION
-# ============================================================
 
 def generate_recommendations(
     user_id,
-    number_of_recommendations
+    number_of_recommendations,
+    model_choice="Hybrid (Collaborative + Content + Popularity)"
 ):
+    user_id = str(user_id)
+    is_new_user = user_id not in engine.user_to_index
 
-    user_history = interactions[
-        interactions["user_id"] == user_id
+    if "Collaborative" in model_choice:
+        rec_df = engine.recommend_collaborative(user_id, n=number_of_recommendations)
+    elif "Matrix Factorization" in model_choice or "SVD" in model_choice:
+        rec_df = engine.recommend_matrix_factorization(user_id, n=number_of_recommendations)
+    elif "Content" in model_choice:
+        rec_df = engine.recommend_content(user_id, n=number_of_recommendations)
+    elif "Popularity" in model_choice:
+        rec_df = engine.recommend_popularity(user_id, n=number_of_recommendations)
+    else:
+        rec_df = engine.recommend_hybrid(user_id, n=number_of_recommendations)
+
+    recommendations = [
+        {
+            "product_id": str(row["product_id"]),
+            "product_name": str(row["product_name"]),
+            "score": float(row["recommendation_score"]),
+            "reason": str(row.get("recommendation_reason", "Recommended"))
+        }
+        for _, row in rec_df.iterrows()
     ]
-
-    # --------------------------------------------------------
-    # NEW USER
-    # --------------------------------------------------------
-
-    if user_history.empty:
-
-        recommendations = (
-            popular_products
-            .head(number_of_recommendations)
-        )
-
-        return [
-            {
-                "product_id": row["product_id"],
-                "product_name": row["product_name"],
-                "score": row["popularity_score"]
-            }
-            for _, row in recommendations.iterrows()
-        ], True
-
-
-    # --------------------------------------------------------
-    # SEEN PRODUCTS
-    # --------------------------------------------------------
-
-    seen_products = set(
-        user_history["product_id"]
-    )
-
-
-    # --------------------------------------------------------
-    # CONTENT-BASED RECOMMENDATIONS
-    # --------------------------------------------------------
-
-    content_scores = {}
-
-    seeds = (
-        user_history
-        .sort_values(
-            "rating",
-            ascending=False
-        )
-        .head(3)
-    )
-
-    for product_id in seeds["product_id"]:
-
-        if product_id not in product_index:
-            continue
-
-        index = product_index[product_id]
-
-        similarities = cosine_similarity(
-            tfidf_matrix[index],
-            tfidf_matrix
-        ).flatten()
-
-        top_indices = np.argpartition(
-            similarities,
-            -30
-        )[-30:]
-
-        for candidate_index in top_indices:
-
-            candidate_id = products.iloc[
-                candidate_index
-            ]["product_id"]
-
-            if candidate_id in seen_products:
-                continue
-
-            score = similarities[
-                candidate_index
-            ]
-
-            if (
-                candidate_id not in content_scores
-                or score > content_scores[candidate_id]
-            ):
-                content_scores[candidate_id] = score
-
-
-    # --------------------------------------------------------
-    # POPULARITY
-    # --------------------------------------------------------
-
-    popularity_scores = {}
-
-    for rank, (_, row) in enumerate(
-        popular_products.head(1000).iterrows()
-    ):
-
-        product_id = row["product_id"]
-
-        if product_id not in seen_products:
-
-            popularity_scores[product_id] = (
-                1 - rank / 1000
-            )
-
-
-    # --------------------------------------------------------
-    # NORMALIZE
-    # --------------------------------------------------------
-
-    content_scores = normalize_scores(
-        content_scores
-    )
-
-    popularity_scores = normalize_scores(
-        popularity_scores
-    )
-
-
-    # --------------------------------------------------------
-    # HYBRID SCORE
-    # --------------------------------------------------------
-
-    hybrid_scores = {}
-
-    candidates = set()
-
-    candidates.update(
-        content_scores.keys()
-    )
-
-    candidates.update(
-        popularity_scores.keys()
-    )
-
-    for product_id in candidates:
-
-        content = content_scores.get(
-            product_id,
-            0
-        )
-
-        popularity = popularity_scores.get(
-            product_id,
-            0
-        )
-
-        score = (
-            0.70 * content
-            + 0.30 * popularity
-        )
-
-        hybrid_scores[product_id] = score
-
-
-    # --------------------------------------------------------
-    # TOP RECOMMENDATIONS
-    # --------------------------------------------------------
-
-    top_products = sorted(
-        hybrid_scores.items(),
-        key=lambda x: x[1],
-        reverse=True
-    )[:number_of_recommendations]
-
-
-    recommendations = []
-
-    for product_id, score in top_products:
-
-        product_rows = products[
-            products["product_id"] == product_id
-        ]
-
-        if product_rows.empty:
-            continue
-
-        product_name = product_rows.iloc[0][
-            "product_name"
-        ]
-
-        recommendations.append(
-            {
-                "product_id": product_id,
-                "product_name": product_name,
-                "score": score
-            }
-        )
-
-    return recommendations, False
+    return recommendations, is_new_user
 
 
 # ============================================================
@@ -365,6 +149,18 @@ number_of_recommendations = st.sidebar.slider(
     min_value=5,
     max_value=20,
     value=10
+)
+
+model_choice = st.sidebar.selectbox(
+    "Recommendation Model",
+    [
+        "Hybrid (Collaborative + Content + Popularity)",
+        "Collaborative Filtering (User-kNN)",
+        "Matrix Factorization (TruncatedSVD)",
+        "Content-Based (TF-IDF)",
+        "Popularity Baseline"
+    ],
+    index=0
 )
 
 generate_button = st.sidebar.button(
@@ -690,12 +486,13 @@ if generate_button:
 
     try:
 
-        user_id_numeric = int(user_id)
+        user_id_str = str(user_id)
 
         recommendations, is_new_user = (
             generate_recommendations(
-                user_id_numeric,
-                number_of_recommendations
+                user_id_str,
+                number_of_recommendations,
+                model_choice=model_choice
             )
         )
 
@@ -724,7 +521,7 @@ if generate_button:
         # ----------------------------------------------------
 
         user_history = interactions[
-            interactions["user_id"] == user_id_numeric
+            interactions["user_id"] == user_id_str
         ]
 
         if not user_history.empty:
@@ -760,7 +557,7 @@ if generate_button:
         # ----------------------------------------------------
 
         st.subheader(
-            f"🎯 Recommended Products for User {user_id}"
+            f"🎯 Recommended Products for User {user_id_str}"
         )
 
         if recommendations:

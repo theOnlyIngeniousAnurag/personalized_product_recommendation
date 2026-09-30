@@ -1,0 +1,63 @@
+{
+  "dataset": "Monash FIT5212 S1 2025 Recommender Challenge",
+  "validation_protocol": "User-Level Stratified Holdout (80/20 non-temporal)",
+  "limitation_statement": "Temporal validation could not be performed because the authentic FIT5212 dataset contains no legitimate timestamp field.",
+  "evaluated_users": 1999,
+  "results": {
+    "Popularity Baseline": {
+      "Precision@5": 0.0345,
+      "Precision@10": 0.0296,
+      "Precision@20": 0.0218,
+      "Recall@5": 0.004,
+      "NDCG@5": 0.0424,
+      "Recall@10": 0.0069,
+      "NDCG@10": 0.0362,
+      "Recall@20": 0.0098,
+      "NDCG@20": 0.0286
+    },
+    "Collaborative Filtering (User-kNN)": {
+      "Precision@5": 0.1975,
+      "Precision@10": 0.1604,
+      "Precision@20": 0.1215,
+      "Recall@5": 0.0282,
+      "NDCG@5": 0.2116,
+      "Recall@10": 0.044,
+      "NDCG@10": 0.1812,
+      "Recall@20": 0.0646,
+      "NDCG@20": 0.1481
+    },
+    "Matrix Factorization (TruncatedSVD)": {
+      "Precision@5": 0.1129,
+      "Precision@10": 0.0947,
+      "Precision@20": 0.0747,
+      "Recall@5": 0.014,
+      "NDCG@5": 0.1207,
+      "Recall@10": 0.023,
+      "NDCG@10": 0.1054,
+      "Recall@20": 0.0356,
+      "NDCG@20": 0.0882
+    },
+    "Content-Based (TF-IDF)": {
+      "Precision@5": 0.0713,
+      "Precision@10": 0.0466,
+      "Precision@20": 0.0327,
+      "Recall@5": 0.0109,
+      "NDCG@5": 0.0853,
+      "Recall@10": 0.0135,
+      "NDCG@10": 0.0634,
+      "Recall@20": 0.0177,
+      "NDCG@20": 0.0483
+    },
+    "Hybrid Model (50% CF + 30% CB + 20% Pop)": {
+      "Precision@5": 0.1611,
+      "Precision@10": 0.1393,
+      "Precision@20": 0.109,
+      "Recall@5": 0.0226,
+      "NDCG@5": 0.1666,
+      "Recall@10": 0.0383,
+      "NDCG@10": 0.1494,
+      "Recall@20": 0.0577,
+      "NDCG@20": 0.126
+    }
+  }
+}

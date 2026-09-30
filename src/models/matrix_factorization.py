@@ -1,222 +1,76 @@
-import pandas as pd
-import numpy as np
+"""
+Matrix Factorization Recommendation Model
+Project 3: Personalized Product Recommendation Model
+TruncatedSVD Matrix Factorization trained on authentic explicit rating matrix.
+"""
 
+from pathlib import Path
+import numpy as np
+import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.decomposition import TruncatedSVD
 
-
-# ============================================================
-# 1. LOAD DATA
-# ============================================================
-
-INPUT_PATH = "data/processed/interactions.csv"
-
-print("=" * 60)
-print("MATRIX FACTORIZATION")
-print("=" * 60)
-
-df = pd.read_csv(INPUT_PATH)
-
-print(f"\nInteractions: {len(df):,}")
-print(f"Users: {df['user_id'].nunique():,}")
-print(f"Products: {df['product_id'].nunique():,}")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+TRAIN_PATH = BASE_DIR / "data" / "interim" / "train_interactions.csv"
+FALLBACK_PATH = BASE_DIR / "data" / "processed" / "interactions.csv"
 
 
-# ============================================================
-# 2. CREATE INTEGER INDEXES
-# ============================================================
+class TruncatedSVDRecommender:
+    def __init__(self, data_path: Path | str | None = None, n_components: int = 20):
+        path = Path(data_path or (TRAIN_PATH if TRAIN_PATH.exists() else FALLBACK_PATH))
+        print(f"Loading data from {path}...")
+        self.df = pd.read_csv(path, dtype={"user_id": str, "product_id": str})
+        self.n_components = n_components
 
-user_ids = df["user_id"].unique()
-product_ids = df["product_id"].unique()
+        self.user_ids = self.df["user_id"].unique()
+        self.product_ids = self.df["product_id"].unique()
 
-user_to_index = {
-    user_id: index
-    for index, user_id in enumerate(user_ids)
-}
+        self.user_to_index = {u: i for i, u in enumerate(self.user_ids)}
+        self.index_to_user = {i: u for i, u in enumerate(self.user_ids)}
+        self.product_to_index = {p: i for i, p in enumerate(self.product_ids)}
+        self.index_to_product = {i: p for i, p in enumerate(self.product_ids)}
 
-product_to_index = {
-    product_id: index
-    for index, product_id in enumerate(product_ids)
-}
+        rows = self.df["user_id"].map(self.user_to_index)
+        cols = self.df["product_id"].map(self.product_to_index)
+        ratings = self.df["rating"].astype(np.float32)
 
-index_to_product = {
-    index: product_id
-    for product_id, index in product_to_index.items()
-}
+        self.user_item_matrix = csr_matrix(
+            (ratings, (rows, cols)),
+            shape=(len(self.user_ids), len(self.product_ids))
+        )
 
+        n_comp = min(self.n_components, min(self.user_item_matrix.shape) - 1)
+        self.svd = TruncatedSVD(n_components=n_comp, random_state=42)
+        self.user_factors = self.svd.fit_transform(self.user_item_matrix)
+        self.item_factors = self.svd.components_
+        self.user_seen = self.df.groupby("user_id")["product_id"].apply(set).to_dict()
 
-# ============================================================
-# 3. CREATE SPARSE USER-ITEM MATRIX
-# ============================================================
+    def recommend(self, user_id: str, n: int = 10, exclude_seen: bool = True) -> list[tuple[str, float]]:
+        user_id = str(user_id)
+        if user_id not in self.user_to_index:
+            return []
 
-rows = df["user_id"].map(user_to_index)
-cols = df["product_id"].map(product_to_index)
+        u_idx = self.user_to_index[user_id]
+        u_vector = self.user_factors[u_idx]
+        predicted_ratings = np.dot(u_vector, self.item_factors)
 
-user_item_matrix = csr_matrix(
-    (
-        df["rating"].astype(np.float32),
-        (rows, cols)
-    ),
-    shape=(
-        len(user_ids),
-        len(product_ids)
-    )
-)
+        seen = self.user_seen.get(user_id, set()) if exclude_seen else set()
+        scores = {}
+        for p_idx, score in enumerate(predicted_ratings):
+            pid = self.index_to_product[p_idx]
+            if pid in seen:
+                continue
+            scores[pid] = float(score)
 
-print("\n" + "=" * 60)
-print("SPARSE USER-ITEM MATRIX")
-print("=" * 60)
-
-print(f"Rows:    {user_item_matrix.shape[0]:,}")
-print(f"Columns: {user_item_matrix.shape[1]:,}")
-print(f"Ratings: {user_item_matrix.nnz:,}")
-
-
-# ============================================================
-# 4. MATRIX FACTORIZATION USING SVD
-# ============================================================
-
-N_COMPONENTS = 20
-
-print("\n" + "=" * 60)
-print("TRAINING SVD MODEL")
-print("=" * 60)
-
-svd = TruncatedSVD(
-    n_components=N_COMPONENTS,
-    random_state=42
-)
-
-user_factors = svd.fit_transform(
-    user_item_matrix
-)
-
-product_factors = svd.components_
-
-print(f"\nLatent factors: {N_COMPONENTS}")
-
-print(
-    f"Explained variance ratio: "
-    f"{svd.explained_variance_ratio_.sum():.4f}"
-)
+        ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:n]
+        return ranked
 
 
-# ============================================================
-# 5. SELECT A USER
-# ============================================================
-
-target_user = user_ids[0]
-
-target_user_index = user_to_index[
-    target_user
-]
-
-print("\n" + "=" * 60)
-print("TARGET USER")
-print("=" * 60)
-
-print(f"User ID: {target_user}")
-
-
-# ============================================================
-# 6. PREDICT USER-PRODUCT SCORES
-# ============================================================
-
-user_vector = user_factors[
-    target_user_index
-]
-
-predicted_scores = (
-    user_vector @ product_factors
-)
-
-
-# ============================================================
-# 7. REMOVE ALREADY INTERACTED PRODUCTS
-# ============================================================
-
-already_interacted = set(
-    user_item_matrix[
-        target_user_index
-    ].indices
-)
-
-predicted_scores[
-    list(already_interacted)
-] = -np.inf
-
-
-# ============================================================
-# 8. GET TOP RECOMMENDATIONS
-# ============================================================
-
-top_n = 10
-
-top_indices = np.argpartition(
-    predicted_scores,
-    -top_n
-)[-top_n:]
-
-top_indices = top_indices[
-    np.argsort(
-        predicted_scores[top_indices]
-    )[::-1]
-]
-
-
-# ============================================================
-# 9. PRODUCT NAMES
-# ============================================================
-
-product_names = (
-    df[
-        ["product_id", "product_name"]
-    ]
-    .drop_duplicates("product_id")
-    .set_index("product_id")[
-        "product_name"
-    ]
-    .to_dict()
-)
-
-
-# ============================================================
-# 10. DISPLAY RECOMMENDATIONS
-# ============================================================
-
-print("\n" + "=" * 60)
-print("TOP 10 MATRIX FACTORIZATION RECOMMENDATIONS")
-print("=" * 60)
-
-for rank, product_index in enumerate(
-    top_indices,
-    start=1
-):
-
-    product_id = index_to_product[
-        product_index
-    ]
-
-    product_name = product_names.get(
-        product_id,
-        "Unknown Product"
-    )
-
-    score = predicted_scores[
-        product_index
-    ]
-
-    print(
-        f"{rank}. {product_name[:70]} "
-        f"| Product ID: {product_id} "
-        f"| Score: {score:.4f}"
-    )
-
-
-# ============================================================
-# COMPLETED
-# ============================================================
-
-print("\n" + "=" * 60)
-print("MATRIX FACTORIZATION COMPLETED")
-print("=" * 60)
+if __name__ == "__main__":
+    svd = TruncatedSVDRecommender()
+    print("SVD Recommender initialized.")
+    sample_user = svd.user_ids[0]
+    recs = svd.recommend(sample_user, n=5)
+    print(f"Top 5 SVD recommendations for user {sample_user}:")
+    for pid, sc in recs:
+        print(f"  Product {pid}: score = {sc:.4f}")

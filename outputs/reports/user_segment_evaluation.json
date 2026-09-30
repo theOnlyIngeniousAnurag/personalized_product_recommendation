@@ -1,0 +1,38 @@
+{
+  "Low Activity": {
+    "Segment": "Low Activity",
+    "Users Evaluated": 675,
+    "Pop P@10": 0.0187,
+    "Pop R@10": 0.008,
+    "Pop NDCG@10": 0.0228,
+    "Pop Catalog Coverage": 24,
+    "Hybrid P@10": 0.1357,
+    "Hybrid R@10": 0.0582,
+    "Hybrid NDCG@10": 0.1554,
+    "Hybrid Catalog Coverage": 2724
+  },
+  "Medium Activity": {
+    "Segment": "Medium Activity",
+    "Users Evaluated": 662,
+    "Pop P@10": 0.0227,
+    "Pop R@10": 0.0065,
+    "Pop NDCG@10": 0.0259,
+    "Pop Catalog Coverage": 24,
+    "Hybrid P@10": 0.1562,
+    "Hybrid R@10": 0.0461,
+    "Hybrid NDCG@10": 0.1713,
+    "Hybrid Catalog Coverage": 2668
+  },
+  "High Activity": {
+    "Segment": "High Activity",
+    "Users Evaluated": 662,
+    "Pop P@10": 0.0477,
+    "Pop R@10": 0.0062,
+    "Pop NDCG@10": 0.0601,
+    "Pop Catalog Coverage": 42,
+    "Hybrid P@10": 0.1875,
+    "Hybrid R@10": 0.027,
+    "Hybrid NDCG@10": 0.2004,
+    "Hybrid Catalog Coverage": 2420
+  }
+}

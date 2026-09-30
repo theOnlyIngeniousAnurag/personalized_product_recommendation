@@ -1,0 +1,52 @@
+{
+  "Popularity Baseline": {
+    "users_evaluated": 1999,
+    "users_with_empty_recommendations": 0,
+    "catalog_coverage_unique_items": 78,
+    "catalog_coverage_ratio": 0.0004,
+    "average_recommended_item_popularity": 161.24,
+    "long_tail_item_ratio": 0.0641,
+    "recommendation_overlap_jaccard": 0.7511,
+    "diversity_score": 0.2489
+  },
+  "Collaborative Filtering (User-kNN)": {
+    "users_evaluated": 1999,
+    "users_with_empty_recommendations": 0,
+    "catalog_coverage_unique_items": 7259,
+    "catalog_coverage_ratio": 0.0361,
+    "average_recommended_item_popularity": 58.26,
+    "long_tail_item_ratio": 0.9862,
+    "recommendation_overlap_jaccard": 0.0036,
+    "diversity_score": 0.9964
+  },
+  "Matrix Factorization (TruncatedSVD)": {
+    "users_evaluated": 1999,
+    "users_with_empty_recommendations": 0,
+    "catalog_coverage_unique_items": 961,
+    "catalog_coverage_ratio": 0.0048,
+    "average_recommended_item_popularity": 93.1,
+    "long_tail_item_ratio": 0.8959,
+    "recommendation_overlap_jaccard": 0.0557,
+    "diversity_score": 0.9443
+  },
+  "Content-Based (TF-IDF)": {
+    "users_evaluated": 1999,
+    "users_with_empty_recommendations": 0,
+    "catalog_coverage_unique_items": 947,
+    "catalog_coverage_ratio": 0.0047,
+    "average_recommended_item_popularity": 94.11,
+    "long_tail_item_ratio": 0.8976,
+    "recommendation_overlap_jaccard": 0.0576,
+    "diversity_score": 0.9424
+  },
+  "Hybrid Model (50% CF + 30% CB + 20% Pop)": {
+    "users_evaluated": 1999,
+    "users_with_empty_recommendations": 0,
+    "catalog_coverage_unique_items": 5974,
+    "catalog_coverage_ratio": 0.0297,
+    "average_recommended_item_popularity": 89.82,
+    "long_tail_item_ratio": 0.9833,
+    "recommendation_overlap_jaccard": 0.0419,
+    "diversity_score": 0.9581
+  }
+}

@@ -13,4 +13,4 @@ fastapi
 uvicorn
 streamlit
 pydantic
-pytestok
+pytest

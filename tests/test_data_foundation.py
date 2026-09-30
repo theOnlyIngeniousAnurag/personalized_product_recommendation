@@ -1,7 +1,7 @@
 """
-Phase 1 Data Foundation Test Suite
-Validates schema integrity, identifier consistency, rating domain,
-leakage prevention, and split reproducibility.
+Phase 1 Data Foundation Test Suite (RetailRocket Recommender System Migration)
+Validates authentic schema integrity, identifier consistency, chronological event timestamps,
+zero-leakage temporal split boundaries, and data foundation audit contracts.
 """
 
 import os
@@ -11,116 +11,125 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-from src.data.split_data import split_user_holdout
+from src.data.split_data import create_temporal_split
 from src.data.acquire_data import check_and_register_raw_data
+from config.config import (
+    PROCESSED_INTERACTIONS,
+    PROCESSED_PRODUCTS,
+    PROCESSED_POPULAR_PRODUCTS,
+    PROCESSED_USERS,
+    TRAIN_INTERACTIONS,
+    VAL_INTERACTIONS,
+    TEST_INTERACTIONS,
+    RAW_REGISTRY_FILE,
+    REPORTS_DIR,
+)
 
 
 def test_popular_products_schema_and_domain():
-    """Validates schema, non-emptiness, and rating bounds for popular_products.csv."""
-    path = "data/processed/popular_products.csv"
+    """Validates schema, non-emptiness, and popularity score bounds for popular_products.csv."""
+    path = PROCESSED_POPULAR_PRODUCTS
     assert os.path.exists(path), f"Missing {path}"
     
     df = pd.read_csv(path)
     assert len(df) > 0, "popular_products.csv is empty"
     
-    expected_cols = [
-        "rank", "product_id", "product_name",
-        "interaction_count", "unique_users",
-        "average_rating", "popularity_score"
-    ]
-    for col in expected_cols:
-        assert col in df.columns, f"Missing column: {col}"
-        
-    assert (df["average_rating"] >= 1.0).all() and (df["average_rating"] <= 5.0).all(), (
-        "Product average ratings violate [1.0, 5.0] domain"
-    )
+    # Check item/product identifier
+    id_col = "item_id" if "item_id" in df.columns else "product_id"
+    assert id_col in df.columns, "Missing item/product identifier column"
+    assert "popularity_score" in df.columns, "Missing popularity_score column"
+    assert "interaction_count" in df.columns, "Missing interaction_count column"
+    
+    assert (df["popularity_score"] >= 0.0).all(), "Popularity scores must be non-negative"
     assert (df["interaction_count"] >= 1).all(), "Interaction count must be >= 1"
 
 
 def test_users_schema_and_domain():
-    """Validates schema, non-emptiness, and rating bounds for users.csv."""
-    path = "data/processed/users.csv"
+    """Validates schema, non-emptiness, and segmentation for users.csv."""
+    path = PROCESSED_USERS
     assert os.path.exists(path), f"Missing {path}"
     
     df = pd.read_csv(path)
     assert len(df) > 0, "users.csv is empty"
     
-    expected_cols = [
-        "user_id", "interaction_count", "unique_products",
-        "average_rating", "total_votes"
-    ]
+    expected_cols = ["user_id", "interaction_count", "unique_items"]
     for col in expected_cols:
         assert col in df.columns, f"Missing column: {col}"
         
-    assert (df["average_rating"] >= 1.0).all() and (df["average_rating"] <= 5.0).all(), (
-        "User average ratings violate [1.0, 5.0] domain"
-    )
+    assert (df["interaction_count"] >= 1).all(), "User interaction count must be >= 1"
     assert df["user_id"].nunique() == len(df), "user_id contains duplicates in users.csv"
 
 
-def test_split_holdout_leakage_and_determinism():
-    """
-    Validates split_user_holdout for:
-    1. Zero leakage (disjoint train/val index sets).
-    2. Determinism with identical random seed.
-    3. Proper stratification for active vs sparse users.
-    """
-    # Create controlled mock interactions to test split mechanics
-    records = []
-    # User 1: 10 interactions (eligible)
-    for p in range(10):
-        records.append({"user_id": "u1", "product_id": f"p{p}", "rating": 4, "votes": 1, "helpful_votes": 1})
-    # User 2: 3 interactions (sparse, < 5, non-eligible)
-    for p in range(3):
-        records.append({"user_id": "u2", "product_id": f"p{p}", "rating": 5, "votes": 0, "helpful_votes": 0})
+def test_interactions_schema_and_chronology():
+    """Validates canonical interactions schema and monotonic timestamp sorting."""
+    path = PROCESSED_INTERACTIONS
+    assert os.path.exists(path), f"Missing {path}"
+    
+    df = pd.read_csv(path, nrows=5000)
+    assert len(df) > 0, "interactions.csv is empty"
+    
+    expected_cols = ["user_id", "event_type", "timestamp"]
+    for col in expected_cols:
+        assert col in df.columns, f"Missing column: {col}"
         
-    mock_df = pd.DataFrame(records)
+    # Check item identifier column
+    assert ("item_id" in df.columns) or ("product_id" in df.columns)
     
-    train1, val1, stats1 = split_user_holdout(mock_df, test_ratio=0.2, min_interactions=5, random_state=42)
-    train2, val2, stats2 = split_user_holdout(mock_df, test_ratio=0.2, min_interactions=5, random_state=42)
+    # Verify timestamp domain (RetailRocket 2015 timestamps in ms: > 1.4e12)
+    assert (df["timestamp"] > 1400000000000).all(), "Timestamps must be valid epoch milliseconds"
+    assert df["timestamp"].is_monotonic_increasing, "Canonical interactions must be monotonically sorted by timestamp"
+
+
+def test_temporal_split_leakage_and_determinism():
+    """
+    Validates chronological temporal splitting for:
+    1. Zero temporal leakage: max(train) < min(val) and max(val) < min(test).
+    2. Strict temporal ordering.
+    """
+    assert os.path.exists(TRAIN_INTERACTIONS), f"Missing {TRAIN_INTERACTIONS}"
+    assert os.path.exists(VAL_INTERACTIONS), f"Missing {VAL_INTERACTIONS}"
+    assert os.path.exists(TEST_INTERACTIONS), f"Missing {TEST_INTERACTIONS}"
     
-    # 1. Leakage check: zero overlapping indices
-    overlap = set(train1.index).intersection(set(val1.index))
-    assert len(overlap) == 0, f"Leakage detected: overlapping indices {overlap}"
+    train_df = pd.read_csv(TRAIN_INTERACTIONS, usecols=["timestamp"])
+    val_df = pd.read_csv(VAL_INTERACTIONS, usecols=["timestamp"])
+    test_df = pd.read_csv(TEST_INTERACTIONS, usecols=["timestamp"])
     
-    # 2. Total preservation: train + val = total
-    assert len(train1) + len(val1) == len(mock_df)
+    assert len(train_df) > 0, "Train partition is empty"
+    assert len(val_df) > 0, "Validation partition is empty"
+    assert len(test_df) > 0, "Test partition is empty"
     
-    # 3. Determinism check
-    pd.testing.assert_frame_equal(train1, train2)
-    pd.testing.assert_frame_equal(val1, val2)
+    train_max = train_df["timestamp"].max()
+    val_min = val_df["timestamp"].min()
+    val_max = val_df["timestamp"].max()
+    test_min = test_df["timestamp"].min()
     
-    # 4. Sparse user check: User 2 must have 0 validation interactions
-    assert "u2" not in val1["user_id"].values
-    assert len(train1[train1["user_id"] == "u2"]) == 3
-    
-    # 5. Eligible user check: User 1 has 10 * 0.2 = 2 val interactions
-    assert len(val1[val1["user_id"] == "u1"]) == 2
-    assert len(train1[train1["user_id"] == "u1"]) == 8
+    # Strict temporal separation
+    assert train_max < val_min, f"Temporal leakage: Train max ts ({train_max}) >= Val min ts ({val_min})"
+    assert val_max < test_min, f"Temporal leakage: Val max ts ({val_max}) >= Test min ts ({test_min})"
 
 
 def test_raw_data_registry_structure():
     """Validates raw data registration execution and JSON output."""
-    registry = check_and_register_raw_data()
+    path = RAW_REGISTRY_FILE
+    assert os.path.exists(path), f"Missing raw data registry at {path}"
+    
+    with open(path, "r") as f:
+        registry = json.load(f)
+        
     assert isinstance(registry, dict)
-    assert "dataset_name" in registry
-    assert "competition_slug" in registry
-    assert "files" in registry
-    assert ("train.csv" in registry["files"]) or ("train_part1.csv" in registry["files"] and "train_part2.csv" in registry["files"])
-    assert "test.csv" in registry["files"]
-    assert os.path.exists("data/raw/raw_data_registry.json")
+    assert "events.csv" in registry or "category_tree.csv" in registry or "dataset_name" in registry
 
 
 def test_data_foundation_audit_json_exists():
-    """Verifies that the machine-readable audit report exists and has required sections."""
-    path = "outputs/reports/data_foundation_audit.json"
-    assert os.path.exists(path), f"Missing {path}"
+    """Verifies that machine-readable audit report exists."""
+    audit_file = REPORTS_DIR / "data_split_audit.json"
+    assert os.path.exists(audit_file), f"Missing split audit at {audit_file}"
     
-    with open(path, "r") as f:
+    with open(audit_file, "r") as f:
         data = json.load(f)
         
-    assert "dataset_name" in data
-    assert "timestamp_investigation" in data
-    assert ("authentic_artifacts_audit" in data) or ("authentic_entities_verification" in data)
-    assert "phase_1_exit_decision" in data
-    assert data["timestamp_investigation"]["status"] == "NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED"
+    assert "train" in data
+    assert "validation" in data
+    assert "test" in data
+    assert "leakage_verification" in data
+    assert data["leakage_verification"]["strict_chronological_ordering"] is True

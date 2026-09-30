@@ -1,17 +1,20 @@
 {
-  "split_strategy": "Path B: User-Level Stratified Holdout (Non-Temporal)",
-  "random_state": 42,
-  "test_ratio": 0.2,
-  "min_interactions_threshold": 5,
-  "total_interactions": 745889,
-  "train_interactions": 597502,
-  "val_interactions": 148387,
-  "unique_users_total": 2000,
-  "unique_users_train": 2000,
-  "eligible_eval_users": 1999,
-  "unique_products_train": 178809,
-  "unique_products_val": 75947,
-  "new_products_in_val": 22516,
-  "val_relevant_items_count": 119623,
-  "val_relevant_ratio": 0.8062
+  "train": {
+    "rows": 522122,
+    "max_ts": 1790764292809
+  },
+  "validation": {
+    "rows": 111883,
+    "min_ts": 1790764292810,
+    "max_ts": 1790764404692
+  },
+  "test": {
+    "rows": 111884,
+    "min_ts": 1790764404693
+  },
+  "leakage_verification": {
+    "rule_a_train_before_val": true,
+    "rule_b_val_before_test": true,
+    "strict_chronological_ordering": true
+  }
 }

@@ -1,252 +1,86 @@
-import pandas as pd
-import numpy as np
+"""
+Collaborative Filtering Recommendation Model
+Project 3: Personalized Product Recommendation Model
+User-based Collaborative Filtering using Nearest Neighbors (cosine metric)
+on the authentic explicit rating matrix.
+"""
 
+from pathlib import Path
+import numpy as np
+import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.neighbors import NearestNeighbors
 
-
-# ============================================================
-# 1. LOAD DATA
-# ============================================================
-
-INPUT_PATH = "data/processed/interactions.csv"
-
-print("=" * 60)
-print("COLLABORATIVE FILTERING")
-print("=" * 60)
-
-df = pd.read_csv(INPUT_PATH)
-
-print(f"\nInteractions: {len(df):,}")
-print(f"Users: {df['user_id'].nunique():,}")
-print(f"Products: {df['product_id'].nunique():,}")
-
-
-# ============================================================
-# 2. CREATE INTEGER INDEXES
-# ============================================================
-
-user_ids = df["user_id"].unique()
-product_ids = df["product_id"].unique()
-
-user_to_index = {
-    user_id: index
-    for index, user_id in enumerate(user_ids)
-}
-
-product_to_index = {
-    product_id: index
-    for index, product_id in enumerate(product_ids)
-}
-
-index_to_user = {
-    index: user_id
-    for user_id, index in user_to_index.items()
-}
-
-index_to_product = {
-    index: product_id
-    for product_id, index in product_to_index.items()
-}
-
-
-# ============================================================
-# 3. CREATE SPARSE USER-ITEM MATRIX
-# ============================================================
-
-rows = df["user_id"].map(user_to_index)
-cols = df["product_id"].map(product_to_index)
-
-user_item_matrix = csr_matrix(
-    (
-        df["rating"].astype(np.float32),
-        (rows, cols)
-    ),
-    shape=(
-        len(user_ids),
-        len(product_ids)
-    )
-)
-
-print("\n" + "=" * 60)
-print("SPARSE USER-ITEM MATRIX")
-print("=" * 60)
-
-print(f"Rows (users):       {user_item_matrix.shape[0]:,}")
-print(f"Columns (products): {user_item_matrix.shape[1]:,}")
-print(f"Stored ratings:     {user_item_matrix.nnz:,}")
-
-
-# ============================================================
-# 4. CALCULATE MATRIX DENSITY
-# ============================================================
-
-total_entries = (
-    user_item_matrix.shape[0]
-    * user_item_matrix.shape[1]
-)
-
-density = (
-    user_item_matrix.nnz / total_entries
-) * 100
-
-print(f"Matrix density: {density:.6f}%")
-
-
-# ============================================================
-# 5. BUILD COLLABORATIVE FILTERING MODEL
-# ============================================================
-
-print("\nBuilding nearest-neighbor model...")
-
-model = NearestNeighbors(
-    metric="cosine",
-    algorithm="brute",
-    n_neighbors=6
-)
-
-model.fit(user_item_matrix)
-
-print("Model trained successfully.")
-
-
-# ============================================================
-# 6. SELECT A USER
-# ============================================================
-
-target_user = user_ids[0]
-
-target_index = user_to_index[target_user]
-
-print("\n" + "=" * 60)
-print("TARGET USER")
-print("=" * 60)
-
-print(f"User ID: {target_user}")
-
-
-# ============================================================
-# 7. FIND SIMILAR USERS
-# ============================================================
-
-target_vector = user_item_matrix[
-    target_index
-]
-
-distances, indices = model.kneighbors(
-    target_vector,
-    n_neighbors=6
-)
-
-print("\nSimilar users:")
-
-for distance, index in zip(
-    distances[0][1:],
-    indices[0][1:]
-):
-
-    similarity = 1 - distance
-
-    print(
-        f"User: {index_to_user[index]} | "
-        f"Similarity: {similarity:.4f}"
-    )
-
-
-# ============================================================
-# 8. COLLECT PRODUCTS FROM SIMILAR USERS
-# ============================================================
-
-similar_user_indices = indices[0][1:]
-
-candidate_scores = {}
-
-for similar_index in similar_user_indices:
-
-    similarity = 1 - distances[0][
-        list(indices[0]).index(similar_index)
-    ]
-
-    products_for_user = (
-        user_item_matrix[similar_index]
-        .indices
-    )
-
-    for product_index in products_for_user:
-
-        # Don't recommend products the target user
-        # has already interacted with.
-        if user_item_matrix[
-            target_index,
-            product_index
-        ] > 0:
-            continue
-
-        if product_index not in candidate_scores:
-            candidate_scores[product_index] = 0
-
-        candidate_scores[product_index] += similarity
-
-
-# ============================================================
-# 9. RANK RECOMMENDATIONS
-# ============================================================
-
-ranked_products = sorted(
-    candidate_scores.items(),
-    key=lambda x: x[1],
-    reverse=True
-)
-
-top_n = 10
-
-recommendations = ranked_products[:top_n]
-
-
-# ============================================================
-# 10. DISPLAY RECOMMENDATIONS
-# ============================================================
-
-print("\n" + "=" * 60)
-print("TOP RECOMMENDED PRODUCTS")
-print("=" * 60)
-
-product_names = (
-    df[
-        ["product_id", "product_name"]
-    ]
-    .drop_duplicates("product_id")
-    .set_index("product_id")[
-        "product_name"
-    ]
-    .to_dict()
-)
-
-for rank, (product_index, score) in enumerate(
-    recommendations,
-    start=1
-):
-
-    product_id = index_to_product[
-        product_index
-    ]
-
-    product_name = product_names.get(
-        product_id,
-        "Unknown Product"
-    )
-
-    print(
-        f"{rank}. {product_name[:70]} "
-        f"| Product ID: {product_id} "
-        f"| Score: {score:.4f}"
-    )
-
-
-# ============================================================
-# COMPLETED
-# ============================================================
-
-print("\n" + "=" * 60)
-print("COLLABORATIVE FILTERING COMPLETED")
-print("=" * 60)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+TRAIN_PATH = BASE_DIR / "data" / "interim" / "train_interactions.csv"
+FALLBACK_PATH = BASE_DIR / "data" / "processed" / "interactions.csv"
+
+
+class UserKNNRecommender:
+    def __init__(self, data_path: Path | str | None = None, n_neighbors: int = 10):
+        path = Path(data_path or (TRAIN_PATH if TRAIN_PATH.exists() else FALLBACK_PATH))
+        print(f"Loading data from {path}...")
+        self.df = pd.read_csv(path, dtype={"user_id": str, "product_id": str})
+        self.n_neighbors = n_neighbors
+
+        self.user_ids = self.df["user_id"].unique()
+        self.product_ids = self.df["product_id"].unique()
+
+        self.user_to_index = {u: i for i, u in enumerate(self.user_ids)}
+        self.index_to_user = {i: u for i, u in enumerate(self.user_ids)}
+        self.product_to_index = {p: i for i, p in enumerate(self.product_ids)}
+        self.index_to_product = {i: p for i, p in enumerate(self.product_ids)}
+
+        rows = self.df["user_id"].map(self.user_to_index)
+        cols = self.df["product_id"].map(self.product_to_index)
+        ratings = self.df["rating"].astype(np.float32)
+
+        self.user_item_matrix = csr_matrix(
+            (ratings, (rows, cols)),
+            shape=(len(self.user_ids), len(self.product_ids))
+        )
+
+        self.knn = NearestNeighbors(
+            metric="cosine",
+            algorithm="brute",
+            n_neighbors=min(self.n_neighbors, len(self.user_ids))
+        )
+        self.knn.fit(self.user_item_matrix)
+        self.user_seen = self.df.groupby("user_id")["product_id"].apply(set).to_dict()
+
+    def recommend(self, user_id: str, n: int = 10, exclude_seen: bool = True) -> list[tuple[str, float]]:
+        user_id = str(user_id)
+        if user_id not in self.user_to_index:
+            return []
+
+        u_idx = self.user_to_index[user_id]
+        distances, indices = self.knn.kneighbors(
+            self.user_item_matrix[u_idx],
+            n_neighbors=min(self.n_neighbors, len(self.user_ids))
+        )
+
+        seen = self.user_seen.get(user_id, set()) if exclude_seen else set()
+        scores = {}
+        for dist, n_idx in zip(distances[0], indices[0]):
+            if n_idx == u_idx:
+                continue
+            sim = max(0.0, 1.0 - dist)
+            row = self.user_item_matrix[n_idx]
+            for p_idx, r in zip(row.indices, row.data):
+                pid = self.index_to_product[p_idx]
+                if pid in seen:
+                    continue
+                scores[pid] = scores.get(pid, 0.0) + (sim * r)
+
+        ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:n]
+        return ranked
+
+
+if __name__ == "__main__":
+    cf = UserKNNRecommender()
+    print("User-kNN Recommender initialized.")
+    sample_user = cf.user_ids[0]
+    recs = cf.recommend(sample_user, n=5)
+    print(f"Top 5 recommendations for user {sample_user}:")
+    for pid, sc in recs:
+        print(f"  Product {pid}: score = {sc:.4f}")

@@ -1,46 +1,64 @@
+"""
+Project Configuration Module
+Personalized Product Recommendation Model - RetailRocket E-Commerce Recommender
+"""
+
+import os
 from pathlib import Path
 
-
-# Project root directory
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Data directories
-DATA_DIR = BASE_DIR / "data"
-RAW_DATA_DIR = DATA_DIR / "raw"
+# Base Paths
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+RAW_DATA_DIR = DATA_DIR / "raw" / "retailrocket"
+INTERIM_DATA_DIR = DATA_DIR / "interim"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
+LEGACY_DATA_DIR = DATA_DIR / "legacy" / "fit5212"
+OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+REPORTS_DIR = OUTPUTS_DIR / "reports"
+FIGURES_DIR = OUTPUTS_DIR / "figures"
+TABLES_DIR = OUTPUTS_DIR / "tables"
 
+# Raw Data Files
+RAW_EVENTS_FILE = RAW_DATA_DIR / "events.csv"
+RAW_CATEGORY_TREE_FILE = RAW_DATA_DIR / "category_tree.csv"
+RAW_ITEM_PROPERTIES_1 = (
+    RAW_DATA_DIR / "item_properties_part1.csv"
+    if (RAW_DATA_DIR / "item_properties_part1.csv").exists()
+    else RAW_DATA_DIR / "item_properties_part1.csv.gz"
+)
+RAW_ITEM_PROPERTIES_2 = (
+    RAW_DATA_DIR / "item_properties_part2.csv"
+    if (RAW_DATA_DIR / "item_properties_part2.csv").exists()
+    else RAW_DATA_DIR / "item_properties_part2.csv.gz"
+)
+RAW_REGISTRY_FILE = DATA_DIR / "raw" / "raw_data_registry.json"
 
-# Model directory
-MODEL_DIR = BASE_DIR / "models"
+# Processed Data Files
+PROCESSED_INTERACTIONS = PROCESSED_DATA_DIR / "interactions.csv"
+PROCESSED_PRODUCTS = PROCESSED_DATA_DIR / "products.csv"
+PROCESSED_USERS = PROCESSED_DATA_DIR / "users.csv"
+PROCESSED_CATEGORIES = PROCESSED_DATA_DIR / "categories.csv"
+PROCESSED_POPULAR_PRODUCTS = PROCESSED_DATA_DIR / "popular_products.csv"
+PROCESSED_USER_SEGMENTS = PROCESSED_DATA_DIR / "user_segment_summary.csv"
 
+# Split Data Files
+TRAIN_INTERACTIONS = INTERIM_DATA_DIR / "train_interactions.csv"
+VAL_INTERACTIONS = INTERIM_DATA_DIR / "val_interactions.csv"
+TEST_INTERACTIONS = INTERIM_DATA_DIR / "test_interactions.csv"
 
-# Output directories
-OUTPUT_DIR = BASE_DIR / "outputs"
-FIGURES_DIR = OUTPUT_DIR / "figures"
-TABLES_DIR = OUTPUT_DIR / "tables"
-REPORTS_DIR = OUTPUT_DIR / "reports"
+# Random Seed
+RANDOM_SEED = 42
 
+# Implicit Event Weights (Hu, Koren, Volinsky paradigm)
+EVENT_WEIGHTS = {
+    "view": 1.0,
+    "addtocart": 3.0,
+    "transaction": 5.0
+}
 
-# Recommendation settings
-TOP_K = 10
+# Evaluation K values
+EVALUATION_K_VALUES = [5, 10, 20]
 
-# Minimum number of interactions required
-# for popularity-based recommendation
-MIN_INTERACTIONS = 5
-
-# Ratings equal to or above this value
-# are considered relevant during evaluation
-RATING_THRESHOLD = 4
-
-
-# Dataset files
-TRAIN_FILE = RAW_DATA_DIR / "train.csv"
-TEST_FILE = RAW_DATA_DIR / "test.csv"
-
-INTERACTIONS_FILE = PROCESSED_DATA_DIR / "interactions.csv"
-
-
-# Project information
-PROJECT_NAME = "Personalized Product Recommendation System"
-RANDOM_STATE = 42
+# API Configuration
+API_HOST = "0.0.0.0"
+API_PORT = 8000

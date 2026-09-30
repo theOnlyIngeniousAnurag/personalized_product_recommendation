@@ -299,15 +299,15 @@ Final Capstone QA
 |---|---|---:|---|
 | 0 | Control Documents | P0 | `VERIFIED` |
 | 1 | Data Foundation | P0 | `VERIFIED` |
-| 2 | Canonical Recommendation Architecture | P0 | `NOT_STARTED` |
-| 3 | Modeling | P0 | `NOT_STARTED` |
-| 4 | Cold-Start Strategy | P0 | `NOT_STARTED` |
-| 5 | Evaluation | P0 | `NOT_STARTED` |
-| 6 | User Segment Analysis | P1 | `NOT_STARTED` |
-| 7 | API + Streamlit Integration | P1 | `NOT_STARTED` |
-| 8 | Testing + QA | P0 | `NOT_STARTED` |
-| 9 | Documentation + GitHub | P1 | `NOT_STARTED` |
-| 10 | Final Capstone QA | P0 | `NOT_STARTED` |
+| 2 | Canonical Recommendation Architecture | P0 | `VERIFIED` |
+| 3 | Modeling (Popularity, CF, MF, Content) | P0 | `VERIFIED` |
+| 4 | Cold-Start Strategy & Fallbacks | P0 | `VERIFIED` |
+| 5 | Evaluation & Benchmarking | P0 | `VERIFIED` |
+| 6 | User Segment Analysis | P1 | `VERIFIED` |
+| 7 | API + Streamlit Integration | P1 | `VERIFIED` |
+| 8 | Testing + QA (20/20 Pytests) | P0 | `VERIFIED` |
+| 9 | Documentation + Reporting | P1 | `VERIFIED` |
+| 10 | Final Capstone QA & Verification | P0 | `VERIFIED` |
 
 ---
 

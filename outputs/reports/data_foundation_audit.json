@@ -1,206 +1,96 @@
 {
-  "audit_timestamp": "2026-09-29T21:20:00Z",
-  "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
-  "dataset_version": "DATA-v1.0-AUTHENTIC-VERIFIED",
-  "raw_data_registry": {
-    "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
-    "competition_slug": "fit-5212-s-1-2025",
-    "competition_url": "https://www.kaggle.com/competitions/fit-5212-s-1-2025",
-    "verification_metadata_timestamp": "2026-09-29T21:18:00Z",
-    "note_on_timestamp": "The verification_metadata_timestamp records when the system administrator/agent verified these files. It is NOT an ML data event timestamp.",
-    "files": {
-      "train_part1.csv": {
-        "status": "PRESENT_AND_VERIFIED",
-        "size_bytes": 21898682,
-        "size_mb": 20.88,
-        "row_count": 372944,
-        "sha256": "3ed0874e9352d4e9be59fc44d0810bee1fb2949976d307c6e5451d1fade34bb1",
-        "path": "data/raw/train_part1.csv"
-      },
-      "train_part2.csv": {
-        "status": "PRESENT_AND_VERIFIED",
-        "size_bytes": 22134236,
-        "size_mb": 21.11,
-        "row_count": 372945,
-        "sha256": "9e10297f3236cb67cb2e47a2d929f82be144d97652a17cec2d21b9fc02038969",
-        "path": "data/raw/train_part2.csv"
-      },
-      "test.csv": {
-        "status": "PRESENT_AND_VERIFIED",
-        "size_bytes": 11543352,
-        "size_mb": 11.01,
-        "row_count": 223553,
-        "sha256": "bbdb9ba79b6e37c38d30661edc8413b05e58c9092a830b5bf12d1de7bdfec65c",
-        "path": "data/raw/test.csv"
-      }
-    },
-    "logical_training_data": {
-      "status": "AUTHENTIC_AND_VERIFIED",
-      "components": [
-        "train_part1.csv",
-        "train_part2.csv"
-      ],
-      "total_records": 745889,
-      "expected_records": 745889,
-      "exact_match": true,
-      "note": "train_part1.csv and train_part2.csv are two row-wise halves of the original train.csv, split strictly for upload size accommodation. They form one logical dataset."
-    },
-    "status": "COMPLETE_AUTHENTIC_DATA_VERIFIED"
-  },
-  "training_dataset_summary": {
-    "source": "Logical concatenation of train_part1.csv and train_part2.csv",
-    "total_rows": 745889,
-    "total_columns": 6,
+  "category_tree.csv": {
+    "sha256": "94e865eb0a3d48cbbfe3b79079018dd92509315c88f5fd8d00d0b4b5af434f5b",
+    "size_bytes": 14454,
+    "row_count": 1669,
     "columns": [
-      "user_id",
-      "product_id",
-      "product_name",
-      "rating",
-      "votes",
-      "helpful_votes"
+      "categoryid",
+      "parentid"
     ],
-    "unique_users": 2000,
-    "unique_products": 201325,
-    "rating_scale": [
-      1,
-      5
-    ],
-    "rating_distribution": {
-      "1": 29149,
-      "2": 35446,
-      "3": 79870,
-      "4": 185193,
-      "5": 416231
-    },
-    "rating_percentages": {
-      "1": 3.91,
-      "2": 4.75,
-      "3": 10.71,
-      "4": 24.83,
-      "5": 55.8
-    },
-    "mean_rating": 4.2387,
-    "median_rating": 5.0,
-    "std_rating": 1.0724,
-    "votes_stats": {
-      "mean": 7.41,
-      "median": 4.0,
-      "max": 3740
-    },
-    "helpful_votes_stats": {
-      "mean": 5.38,
-      "median": 2.0,
-      "max": 2537
-    },
     "missing_values": {
-      "user_id": 0,
-      "product_id": 0,
-      "product_name": 0,
-      "rating": 0,
-      "votes": 0,
-      "helpful_votes": 0
+      "categoryid": 0,
+      "parentid": 25
     },
-    "duplicate_rows": 0,
-    "duplicate_user_product_pairs": 0
-  },
-  "test_dataset_summary": {
-    "file": "data/raw/test.csv",
-    "total_rows": 223553,
-    "columns": [
-      "ID",
-      "user_id",
-      "product_id",
-      "product_name"
-    ],
-    "unique_users": 2000,
-    "unique_products": 103990,
-    "missing_values": {
-      "ID": 0,
-      "user_id": 0,
-      "product_id": 0,
-      "product_name": 0
-    },
-    "user_overlap_with_train": 2000,
-    "new_users_in_test": 0,
-    "product_overlap_with_train": 85456,
-    "new_products_in_test": 18534
-  },
-  "timestamp_investigation": {
-    "status": "NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED",
-    "path_enacted": "PATH B",
-    "temporal_validation_status": "NOT AVAILABLE / INVALID FOR TEMPORAL VALIDATION",
-    "rationale": "Columns inspected across train_part1.csv, train_part2.csv, and test.csv: user_id, product_id, product_name, rating, votes, helpful_votes, ID. No timestamp, date, or epoch second column exists."
-  },
-  "authentic_entities_verification": {
-    "popular_products": {
-      "file": "data/processed/popular_products.csv",
-      "total_products": 33072,
-      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
-    },
-    "users": {
-      "file": "data/processed/users.csv",
-      "total_users": 2000,
-      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
-    },
-    "products": {
-      "file": "data/processed/products.csv",
-      "total_products": 201325,
-      "match_status": "100.0% DERIVED FROM AUTHENTIC INTERACTIONS"
+    "duplicate_count": 0,
+    "details": {
+      "categories": 1669,
+      "root_categories": 25
     }
   },
-  "cold_start_metrics": {
-    "new_users_in_test": 0,
-    "new_products_in_test": 18534,
-    "sparse_users_threshold_less_than_5": 1,
-    "sparse_products_threshold_less_than_5": 168253,
-    "active_users_5_or_more": 1999,
-    "popular_products_5_or_more": 33072
-  },
-  "split_audit": {
-    "split_strategy": "Path B: User-Level Stratified Holdout (Non-Temporal)",
-    "random_state": 42,
-    "test_ratio": 0.2,
-    "min_interactions_threshold": 5,
-    "total_interactions": 745889,
-    "train_interactions": 597502,
-    "val_interactions": 148387,
-    "unique_users_total": 2000,
-    "unique_users_train": 2000,
-    "eligible_eval_users": 1999,
-    "unique_products_train": 178809,
-    "unique_products_val": 75947,
-    "new_products_in_val": 22516,
-    "val_relevant_items_count": 119623,
-    "val_relevant_ratio": 0.8062
-  },
-  "phase_1_exit_decision": {
-    "decision": "PASS",
-    "unblock_status": "UNBLOCKED",
-    "reason": "Authentic training data (train_part1.csv + train_part2.csv, 745,889 rows) and test data (test.csv, 223,553 rows) are fully verified, registered, preprocessed, and tested with 0 data integrity errors."
-  },
-  "authentic_artifacts_audit": {
-    "popular_products": {
-      "file": "data/processed/popular_products.csv",
-      "total_products": 33072,
-      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
+  "events.csv": {
+    "sha256": "3745aa83238b1e6d44d8fda209807899f420084398f94ddf745f3cbcfecbf9e7",
+    "size_bytes": 94237913,
+    "row_count": 2756101,
+    "columns": [
+      "timestamp",
+      "visitorid",
+      "event",
+      "itemid",
+      "transactionid"
+    ],
+    "missing_values": {
+      "timestamp": 0,
+      "visitorid": 0,
+      "event": 0,
+      "itemid": 0,
+      "transactionid": 2733644
     },
-    "users": {
-      "file": "data/processed/users.csv",
-      "total_users": 2000,
-      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
-    },
-    "products": {
-      "file": "data/processed/products.csv",
-      "total_products": 201325,
-      "match_status": "100.0% DERIVED FROM AUTHENTIC INTERACTIONS"
+    "duplicate_count": 460,
+    "details": {
+      "timestamp_min": 1430622004384,
+      "timestamp_max": 1442545187788,
+      "datetime_min_utc": "2015-05-03T03:00:04.384000+00:00",
+      "datetime_max_utc": "2015-09-18T02:59:47.788000+00:00",
+      "unique_visitors": 1407580,
+      "unique_items": 235061,
+      "event_counts": {
+        "view": 2664312,
+        "addtocart": 69332,
+        "transaction": 22457
+      },
+      "transaction_events": 22457
     }
   },
-  "quarantined_synthetic_artifacts": {
-    "location": "data/quarantined_synthetic/",
-    "files": [
-      "interactions.csv",
-      "products.csv"
+  "item_properties_part1.csv": {
+    "sha256": "30aad5aeca58b2dc27dcc73e1708565f5818e45adb3eb57401f91e87355b0b81",
+    "size_bytes": 484315749,
+    "row_count": 10999999,
+    "columns": [
+      "timestamp",
+      "itemid",
+      "property",
+      "value"
     ],
-    "status": "QUARANTINED \u2014 NOT FOR TRAINING/EVALUATION"
+    "missing_values": {},
+    "duplicate_count": 0,
+    "details": {
+      "sample_columns": [
+        "timestamp",
+        "itemid",
+        "property",
+        "value"
+      ]
+    }
+  },
+  "item_properties_part2.csv": {
+    "sha256": "d5e7d1a91dc40f522aeb596b267e6c87d8aed689a7192d12369cfb165eb987e5",
+    "size_bytes": 408929907,
+    "row_count": 9275903,
+    "columns": [
+      "timestamp",
+      "itemid",
+      "property",
+      "value"
+    ],
+    "missing_values": {},
+    "duplicate_count": 0,
+    "details": {
+      "sample_columns": [
+        "timestamp",
+        "itemid",
+        "property",
+        "value"
+      ]
+    }
   }
 }

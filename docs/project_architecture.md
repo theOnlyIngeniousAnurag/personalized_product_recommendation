@@ -58,4 +58,4 @@ personalized-product-recommendation/
 └── docs/
     ├── project_architecture.md
     ├── methodology.md
-    └── api_documentation.mdv
+    └── api.md

@@ -1,48 +1,50 @@
-PERSONALIZED PRODUCT RECOMMENDATION SYSTEM
-DATA ANALYSIS REPORT
+======================================================================
+RETAILROCKET DATASET COMPREHENSIVE AUDIT REPORT
+Generated: 2026-09-29 22:11:53 UTC
+======================================================================
 
-1. Dataset Overview
+1. PROVENANCE & RAW DATA INVENTORY
+----------------------------------------
+File: category_tree.csv
+  Size: 14,454 bytes
+  Rows: 1,669
+  Columns: categoryid, parentid
+  SHA-256: 94e865eb0a3d48cbbfe3b79079018dd92509315c88f5fd8d00d0b4b5af434f5b
 
-The dataset used for this project is the FIT5212 S1 2025 Recommender System Challenge dataset obtained from Kaggle. The dataset was collected from Amazon and contains user-item rating interactions and product information.
+File: events.csv
+  Size: 94,237,913 bytes
+  Rows: 2,756,101
+  Columns: timestamp, visitorid, event, itemid, transactionid
+  SHA-256: 3745aa83238b1e6d44d8fda209807899f420084398f94ddf745f3cbcfecbf9e7
 
-The training dataset contains explicit ratings ranging from 1 to 5. The main fields include user ID, product ID, product name, rating, votes, and helpful votes.
+File: item_properties_part1.csv
+  Size: 484,315,749 bytes
+  Rows: 10,999,999
+  Columns: timestamp, itemid, property, value
+  SHA-256: 30aad5aeca58b2dc27dcc73e1708565f5818e45adb3eb57401f91e87355b0b81
 
-2. Dataset Statistics
+File: item_properties_part2.csv
+  Size: 408,929,907 bytes
+  Rows: 9,275,903
+  Columns: timestamp, itemid, property, value
+  SHA-256: d5e7d1a91dc40f522aeb596b267e6c87d8aed689a7192d12369cfb165eb987e5
 
-Training records: 745,889
-Test records: 223,553
-Unique products: 201,325
+2. EVENTS INTERACTION AUDIT
+----------------------------------------
+Total Events: 2,756,101
+Unique Visitors: 1,407,580
+Unique Items: 235,061
+Timestamp Range: 1430622004384 to 1442545187788
+Date Range (UTC): 2015-05-03T03:00:04.384000+00:00 to 2015-09-18T02:59:47.788000+00:00
+Event Type Breakdown:
+  - view: 2,664,312 (96.67%)
+  - addtocart: 69,332 (2.52%)
+  - transaction: 22,457 (0.81%)
+Transactions Recorded: 22,457
 
-The rating values range from 1 to 5, making this an explicit-feedback recommendation problem.
+3. CATEGORY TAXONOMY AUDIT
+----------------------------------------
+Total Category Rows: 1,669
+Unique Categories: 1,669
+Root Categories (No Parent): 25
 
-3. Rating Distribution
-
-The distribution of ratings is:
-
-Rating 1: 29,149
-Rating 2: 35,446
-Rating 3: 79,870
-Rating 4: 185,193
-Rating 5: 416,231
-
-The dataset contains substantially more high ratings, particularly rating 5, than low ratings.
-
-4. Data Preprocessing
-
-The following preprocessing operations were performed:
-
-* Removed duplicate user-product interactions.
-* Removed records with missing essential values.
-* Converted user and product identifiers into consistent formats.
-* Converted ratings and vote-related fields into numeric values.
-* Retained valid ratings between 1 and 5.
-* Created separate user and product entity datasets.
-* Generated popularity statistics for products.
-
-5. Dataset Limitation
-
-The dataset does not contain a timestamp field. Therefore, a genuine chronological/time-based validation split cannot be performed from the available data. The evaluation procedure uses a user-level holdout strategy instead of assuming or fabricating timestamps.
-
-6. Summary
-
-The processed dataset provides sufficient information for developing popularity-based, collaborative filtering, matrix factorization, content-based, and hybrid recommendation approaches.
