@@ -32,7 +32,6 @@ An end-to-end, production-grade personalized product recommendation platform com
 - [Installation & Setup](#installation--setup)
 - [Running the Application](#running-the-application)
 - [Testing & Quality Assurance](#testing--quality-assurance)
-- [Project Status](#project-status)
 - [Limitations](#limitations)
 - [Future Improvements](#future-improvements)
 - [License & Attribution](#license--attribution)
@@ -99,7 +98,7 @@ Evaluation performed on the isolated validation split (**148,387 interactions** 
 - **Interaction Type**: Explicit integer ratings $[1.0, 5.0]$ (Mean: 4.2387; 80.63% ratings $\ge 4.0$).
 
 ### Validation Protocol
-- **Holdout Scheme**: Path B User-Level Stratified Holdout (597,502 training interactions, 148,387 validation interactions across 1,999 users, disjoint index sets, random seed 42).
+- **Holdout Scheme**: Path B User-Level Stratified Holdout (597,501 training interactions, 148,388 validation interactions across 1,999 users, disjoint index sets, random seed 42).
 - **Relevance Definition**: `rating >= 4.0` indicates positive preference for ranking evaluation. Previously interacted items in training are strictly excluded.
 
 ---
@@ -324,16 +323,21 @@ The Streamlit dashboard (`app/streamlit_app.py`) provides an intuitive visual in
 personalized_product_recommendation/
 │
 ├── api/
+│   ├── __init__.py
 │   └── recommendation_api.py          # FastAPI REST endpoints
 │
 ├── app/
 │   └── streamlit_app.py               # Glassmorphism Streamlit UI
 │
 ├── config/
+│   ├── __init__.py
 │   └── config.py                      # Global paths & hyperparameter defaults
 │
 ├── data/
 │   ├── raw/                           # Raw FIT5212 Amazon review datasets
+│   │   ├── train_part1.csv
+│   │   ├── train_part2.csv
+│   │   └── test.csv
 │   ├── interim/                       # Train/Val 80/20 user holdout splits
 │   └── processed/                     # Formatted interaction tables & metadata
 │
@@ -341,6 +345,10 @@ personalized_product_recommendation/
 │   ├── figures/                       # Evaluation & score distribution plots
 │   ├── reports/                       # Metric JSONs & evaluation text summaries
 │   └── tables/                        # CSV benchmark tables & PNG figures
+│
+├── scripts/
+│   ├── check_setup.py                 # Setup & data validation utility
+│   └── setup_windows.ps1              # Automated Windows PowerShell setup
 │
 ├── screenshots/                       # Dashboard application screenshots
 │   ├── 01_recommendation_dashboard.png
@@ -350,6 +358,7 @@ personalized_product_recommendation/
 │   └── 05_popular_products.png
 │
 ├── src/
+│   ├── __init__.py
 │   ├── analysis/                      # User activity segmentation scripts
 │   ├── data/                          # Data cleaning, splitting & validation
 │   ├── evaluation/                    # Precision, Recall, NDCG evaluation engine
@@ -361,6 +370,8 @@ personalized_product_recommendation/
 │   ├── test_models_and_api.py         # Model math, cold-start & API tests
 │   └── test_recommendation.py         # Recommendation Engine contract tests
 │
+├── conftest.py                        # Pytest root configuration
+├── pyproject.toml                     # Python package & pytest configuration
 ├── metadata.json                      # Applet configuration metadata
 ├── package.json                       # Package manifest
 ├── README.md                          # Master public repository documentation
@@ -382,22 +393,46 @@ personalized_product_recommendation/
 
 ## Installation & Setup
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/theOnlyIngeniousAnurag/personalized_product_recommendation.git
-   cd personalized_product_recommendation
-   ```
+### 1. Windows PowerShell Setup
 
-2. **Create and Activate Virtual Environment**:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
+```powershell
+# Clone the repository
+git clone https://github.com/theOnlyIngeniousAnurag/personalized_product_recommendation.git
+cd personalized_product_recommendation
 
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Create and activate virtual environment
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# Install dependencies
+python -m pip install -r requirements.txt
+
+# Verify setup
+python scripts/check_setup.py
+```
+
+*Alternatively, run the automated PowerShell script:*
+```powershell
+.\scripts\setup_windows.ps1
+```
+
+### 2. Linux / macOS Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/theOnlyIngeniousAnurag/personalized_product_recommendation.git
+cd personalized_product_recommendation
+
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+python3 -m pip install -r requirements.txt
+
+# Verify setup
+python3 scripts/check_setup.py
+```
 
 ---
 
@@ -405,33 +440,62 @@ personalized_product_recommendation/
 
 ### 1. Launch Streamlit Dashboard
 ```bash
-streamlit run app/streamlit_app.py --server.port 3000
+# Windows PowerShell
+python -m streamlit run app/streamlit_app.py --server.port 3000
+
+# Linux / macOS
+python3 -m streamlit run app/streamlit_app.py --server.port 3000
 ```
 Open browser at `http://localhost:3000`.
 
 ### 2. Launch FastAPI Service
 ```bash
-uvicorn api.recommendation_api:app --host 0.0.0.0 --port 8000
+# Windows PowerShell
+python -m uvicorn api.recommendation_api:app --host 127.0.0.1 --port 8000
+
+# Linux / macOS
+python3 -m uvicorn api.recommendation_api:app --host 127.0.0.1 --port 8000
 ```
-API Documentation available at `http://localhost:8000/docs`.
+Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
 
 ---
 
 ## Testing & Quality Assurance
 
-Execute the complete automated test suite:
+Execute the complete automated test suite from the repository root:
 
 ```bash
+# Windows PowerShell
+python -m pytest -v
+
+# Linux / macOS
 python3 -m pytest -v
 ```
 
-### Test Results
+### Verified Test Execution Output
 ```text
-============================== 20 passed in 18.62s ==============================
+============================== 20 passed in 42.99s ==============================
 tests/test_data_foundation.py .....                                     [ 25%]
 tests/test_models_and_api.py .........                                  [ 70%]
 tests/test_recommendation.py ......                                     [100%]
 ```
+
+---
+
+## Limitations
+
+1. **Absence of Timestamps**: The authentic Monash FIT5212 dataset contains no timestamp field, preventing temporal train/val splitting and time-decayed similarity modeling.
+2. **Explicit Ratings Only**: Interactions consist strictly of 1–5 integer ratings without implicit event logs (clicks, add-to-carts, page views).
+3. **Title-Only Metadata**: Item features are derived exclusively from product titles without category taxonomies, brand names, or image representations.
+
+---
+
+## Future Improvements
+
+- **Implicit Feedback Integration**: Incorporate clickstream and session logs to train pairwise ranking loss models (e.g., BPR, WARP).
+- **Deep Neural Recommendations**: Explore Neural Collaborative Filtering (NCF) and Two-Tower DNN architectures.
+- **Richer Metadata Embeddings**: Leverage Transformer text embeddings (e.g., Sentence-BERT) on full item descriptions.
+- **Real-Time A/B Testing**: Deploy online bandit algorithms to optimize hybrid component weights dynamically.
 
 ---
 

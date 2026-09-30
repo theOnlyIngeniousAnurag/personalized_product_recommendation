@@ -12,5 +12,8 @@ joblib
 fastapi
 uvicorn
 streamlit
+altair
 pydantic
 pytest
+requests
+httpx

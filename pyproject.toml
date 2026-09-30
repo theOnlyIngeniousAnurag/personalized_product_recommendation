@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "personalized_product_recommendation"
+version = "1.0.0"
+description = "Personalized Product Recommendation System using FIT5212 Amazon Dataset"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "fastapi",
+    "uvicorn",
+    "streamlit",
+    "pydantic",
+    "altair",
+    "pytest",
+    "requests",
+    "httpx"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -5,10 +5,16 @@ Validates Popularity, User-kNN CF, SVD Matrix Factorization, Content-Based,
 Hybrid recommender, cold-start fallbacks, metric computations, and REST API.
 """
 
+import sys
+from pathlib import Path
 import pytest
 import pandas as pd
 import numpy as np
 from fastapi.testclient import TestClient
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.recommendation.recommendation_engine import RecommendationEngine
 from src.evaluation.evaluate_recommendations import precision_at_k, recall_at_k, ndcg_at_k

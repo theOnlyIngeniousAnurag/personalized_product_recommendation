@@ -1,6 +1,12 @@
-import pandas as pd
+import sys
 from pathlib import Path
+import pandas as pd
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from config.config import PROCESSED_INTERACTIONS
 from src.utils.data_utils import (
     load_csv,
     check_required_columns,
@@ -10,18 +16,18 @@ from src.recommendation.recommendation_engine import RecommendationEngine
 
 
 def test_load_interactions():
-    file_path = "data/processed/interactions.csv"
+    file_path = str(PROCESSED_INTERACTIONS)
     df = load_csv(file_path)
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
 
 
 def test_required_columns():
-    file_path = "data/processed/interactions.csv"
+    file_path = str(PROCESSED_INTERACTIONS)
     df = load_csv(file_path)
 
-    # Core canonical fields in RetailRocket dataset
-    required_columns = ["user_id", "timestamp"]
+    # Core canonical fields in FIT5212 Amazon dataset
+    required_columns = ["user_id", "product_id", "rating"]
     assert check_required_columns(df, required_columns)
     assert ("item_id" in df.columns) or ("product_id" in df.columns)
 
