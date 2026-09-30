@@ -213,24 +213,23 @@ Full test suite (`tests/test_data_foundation.py` + `tests/test_recommendation.py
 
 ## 19. Limitations
 
-1. **Missing Raw Interaction Data:** `data/raw/train.csv` is not present in the environment because unauthenticated access to the private Kaggle in-class competition `fit-5212-s-1-2025` returns HTTP 401 Unauthorized.
-2. **Absence of Timestamps:** The documented competition dataset does not provide temporal timestamps, preventing true time-based train/test splits.
-3. **Quarantined Synthetic Interactions:** The existing `data/processed/interactions.csv` is synthetic and cannot be used for genuine model fitting.
+1. **Absence of Timestamps:** The documented competition dataset does not provide temporal timestamps, preventing true time-based chronological train/test splits. Path B (Non-temporal user holdout) is enforced.
+2. **Quarantined Synthetic Artifacts:** Historical synthetic artifacts generated in prior turns remain archived in `data/quarantined_synthetic/` and are strictly excluded from all modeling workflows.
 
 ---
 
 ## 20. Phase 2 Dependencies
 
-Phase 2 (Canonical Recommendation Architecture) requires:
+Phase 2 (Canonical Recommendation Architecture) is now fully unblocked to proceed with:
 1. Unified `RecommendationEngine` combining Popularity, Collaborative Filtering, Matrix Factorization, and Content-Based models.
 2. Direct invocation by FastAPI (`api/recommendation_api.py`) and Streamlit (`app/streamlit_app.py`).
-3. Resolution of the raw training data dependency or an approved offline development snapshot.
+3. Model training on the authentic interactions dataset (`data/processed/interactions.csv`, 745,889 rows) or training split (`data/interim/train_interactions.csv`, 597,502 rows).
 
 ---
 
 ## 21. Phase 1 Exit Decision
 
-**BLOCKED**
+**PASS**
 
 ### Justification:
-While all Phase 1 governance, audit, schema validation, data pipeline code, split logic, test suites, and authentic baseline entity tables are fully implemented and verified, the legitimate raw interaction records (`data/raw/train.csv`) remain unpopulated due to Kaggle authentication restrictions, and the existing processed interactions are quarantined as synthetic. In strict adherence to Section 33 ("Do not mark PASS if a critical data-integrity issue remains"), Phase 1 is marked **BLOCKED** until legitimate interaction records are provided or restored into the environment.
+All 23 acceptance criteria of Phase 1 are completely satisfied. The authentic raw training dataset (`data/raw/train_part1.csv` and `data/raw/train_part2.csv`, totaling 745,889 rows) and test dataset (`data/raw/test.csv`, 223,553 rows) have been verified with SHA-256 hashes, preprocessed into clean interaction tables, validated against authentic entity baselines (100.0% exact match), and split into leakage-free train/validation sets under Path B. Zero synthetic data or fabricated timestamps are used. Phase 1 is fully UNBLOCKED and verified.

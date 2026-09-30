@@ -80,5 +80,41 @@ def split_user_holdout(
     return train_df, val_df, stats
 
 
+def execute_split():
+    input_path = PROCESSED_DIR / "interactions.csv"
+    if not input_path.exists():
+        raise FileNotFoundError(f"Missing processed interactions: {input_path}")
+        
+    print("=" * 60)
+    print("EXECUTING PATH B USER-LEVEL HOLDOUT SPLIT")
+    print("=" * 60)
+    
+    interactions = pd.read_csv(input_path)
+    train_df, val_df, stats = split_user_holdout(interactions)
+    
+    INTERIM_DIR.mkdir(parents=True, exist_ok=True)
+    AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+    
+    train_out = INTERIM_DIR / "train_interactions.csv"
+    val_out = INTERIM_DIR / "val_interactions.csv"
+    audit_out = AUDIT_DIR / "data_split_audit.json"
+    
+    train_df.to_csv(train_out, index=False)
+    val_df.to_csv(val_out, index=False)
+    
+    with open(audit_out, "w", encoding="utf-8") as f:
+        json.dump(stats, f, indent=2)
+        
+    print(f"Total interactions:       {stats['total_interactions']:,}")
+    print(f"Train split interactions: {stats['train_interactions']:,} ({stats['train_interactions'] / stats['total_interactions'] * 100:.1f}%)")
+    print(f"Val split interactions:   {stats['val_interactions']:,} ({stats['val_interactions'] / stats['total_interactions'] * 100:.1f}%)")
+    print(f"Eligible eval users:      {stats['eligible_eval_users']:,} / {stats['unique_users_total']:,}")
+    print(f"Val ground-truth items:   {stats['val_relevant_items_count']:,} (Ratings >= 4, {stats['val_relevant_ratio']*100:.1f}%)")
+    print(f"Saved train interactions: {train_out}")
+    print(f"Saved val interactions:   {val_out}")
+    print(f"Saved split audit log:    {audit_out}")
+    print("=" * 60)
+
+
 if __name__ == "__main__":
-    print("[INFO] split_data module loaded.")
+    execute_split()

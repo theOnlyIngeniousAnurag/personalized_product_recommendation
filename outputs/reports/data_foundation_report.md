@@ -11,25 +11,25 @@ The primary dataset declared and utilized for Project 3 is the **Monash Universi
 
 ## 2. Source
 
-- **Official Distribution:** Distributed to enrolled students via Kaggle In-Class platform.
-- **Acquisition State in Environment:** Direct public unauthenticated download returns HTTP 401 Unauthorized. Automated retrieval requires student-level Kaggle API credentials (`kaggle.json`).
-- **Existing Baseline Artifacts in Repository:**
-  - `data/processed/popular_products.csv`: 33,072 products precomputed from genuine training records.
-  - `data/processed/users.csv`: 2,000 active users with genuine interaction summary metrics.
-  - `data/processed/user_segment_summary.csv`: Activity segmentation summary.
-  - `outputs/reports/data_analysis_report.txt`: Historical data audit report.
+- **Authentic Raw Inputs Supplied:**
+  - `data/raw/train_part1.csv`: 372,944 rows (SHA-256: `3ed0874e9352d4e9be59fc44d0810bee1fb2949976d307c6e5451d1fade34bb1`)
+  - `data/raw/train_part2.csv`: 372,945 rows (SHA-256: `9e10297f3236cb67cb2e47a2d929f82be144d97652a17cec2d21b9fc02038969`)
+  - `data/raw/test.csv`: 223,553 rows (SHA-256: `bbdb9ba79b6e37c38d30661edc8413b05e58c9092a830b5bf12d1de7bdfec65c`)
+- **Logical Training Dataset:** `train_part1.csv` and `train_part2.csv` are row-wise parts of the original `train.csv` (split strictly for upload size accommodation) forming an exact combined total of 745,889 records.
+- **Baseline Entity Artifacts:** Verified against the combined training records, confirming a 100.0% reproducible match with `popular_products.csv` (33,072 items) and `users.csv` (2,000 users).
 
 ## 3. Schema
 
-### Documented Raw Schema (`train.csv`):
+### Raw Source Schema:
 | Column | Type | Nullable | Domain / Constraints | Description |
 |---|---|---|---|---|
 | `user_id` | String | No | Non-empty string | User unique identifier |
 | `product_id` | String | No | Non-empty string | Product unique identifier |
-| `product_name` | String | Yes | Text | Product title / name |
-| `rating` | Numeric | No | Discrete integer in [1, 5] | Explicit customer rating |
-| `votes` | Numeric | Yes | Integer $\ge 0$ | Total review votes recorded |
-| `helpful_votes` | Numeric | Yes | Integer $\ge 0, \le \text{votes}$ | Helpful review votes |
+| `product_name` | String | No | Non-empty string | Product title / name |
+| `rating` | Numeric (int) | No | Discrete integer in [1, 5] | Explicit customer rating |
+| `votes` | Numeric (int) | No | Integer $\ge 0$ | Total review votes recorded |
+| `helpful_votes` | Numeric (int) | No | Integer $\ge 0, \le \text{votes}$ | Helpful review votes |
+| `ID` | Numeric (int) | No | Unique row index | Kaggle submission identifier |
 
 ## 4. Interaction Semantics
 
@@ -45,7 +45,7 @@ This is explicitly a **derived evaluation convention**, not a behavioral log eve
 
 ## 5. User Statistics
 
-From the authentic `data/processed/users.csv` baseline (2,000 users):
+From the authentic training dataset across all 2,000 unique users:
 - **Total Registered Users:** 2,000
 - **Interaction Count per User:**
   - Minimum: 4
@@ -60,101 +60,130 @@ From the authentic `data/processed/users.csv` baseline (2,000 users):
   - Median: 4.31
   - Mean: 4.28
   - Maximum: 5.00
-- **User Activity Distribution:** Highly skewed right tail with heavy engagement among core users.
+- **Active Users ($\ge 5$ interactions):** 1,999 (99.95%)
+- **Sparse Users ($< 5$ interactions):** 1 (0.05%, user_id 1999 has 4 interactions)
 
 ## 6. Product Statistics
 
-From the authentic `data/processed/popular_products.csv` baseline (33,072 products):
-- **Total Cataloged Products:** 33,072
+From the authentic catalog across all 201,325 unique products:
+- **Total Cataloged Products:** 201,325
 - **Interaction Count per Product:**
-  - Minimum: 5 (popularity baseline threshold)
-  - 25th Percentile: 6
-  - Median: 9
-  - Mean: 18.52
-  - 75th Percentile: 18
+  - Minimum: 1
+  - Median: 1
+  - Mean: 3.70
   - Maximum: 275 (Product ID 212937: *The Lord of the Rings - The Fellowship of the Ring*)
+- **Popular Products ($\ge 5$ interactions):** 33,072 products (16.43% of catalog, matching `popular_products.csv`)
+- **Long-tail / Sparse Products ($< 5$ interactions):** 168,253 products (83.57% of catalog)
 - **Average Rating per Product:**
   - Minimum: 1.00
-  - Median: 4.33
+  - Median: 4.50
   - Mean: 4.19
   - Maximum: 5.00
 
 ## 7. Rating Statistics
 
-From verified baseline documentation (`outputs/reports/data_analysis_report.txt`):
+From the full 745,889 authentic training records:
 - **Total Training Interactions:** 745,889
 - **Rating 1:** 29,149 (3.91%)
 - **Rating 2:** 35,446 (4.75%)
 - **Rating 3:** 79,870 (10.71%)
 - **Rating 4:** 185,193 (24.83%)
 - **Rating 5:** 416,231 (55.80%)
-- **Overall Mean Rating:** $\approx 4.24$
-- **High-Rating Bias:** Over 80.6% of ratings are 4 or 5 stars, which is typical for e-commerce voluntary product review distributions.
+- **Mean Rating:** $4.2387 \approx 4.24$
+- **Median Rating:** 5.00
+- **Standard Deviation:** 1.0724
+- **Positive Ratings ($\ge 4$):** 601,424 (80.63%)
 
 ## 8. Timestamp Statistics
 
 - **Timestamp Column Availability:** None.
-- **Original Source Verification:** Neither `fit-5212-s-1-2025` nor the baseline CSVs provide timestamps.
+- **Inspected Fields:** `user_id`, `product_id`, `product_name`, `rating`, `votes`, `helpful_votes`, `ID`.
 - **Status:** **NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED**.
-- **Governance Finding:** Classified as **`INVALID FOR TEMPORAL VALIDATION`**. No artificial timestamps or chronological inferences from IDs or row positions are permitted.
+- **Governance Finding:** Classified as **`INVALID FOR TEMPORAL VALIDATION`**. No artificial timestamps or chronological inferences from IDs or row positions are permitted. **Path B (Non-Temporal Validation Protocol)** is permanently enacted.
 
 ## 9. Missing Values
 
-Analysis of the processing rules:
-- `user_id`: Mandatory. Rows with missing `user_id` are dropped.
-- `product_id`: Mandatory. Rows with missing `product_id` are dropped.
-- `rating`: Mandatory. Rows missing ratings or with non-numeric ratings are dropped.
-- `product_name`: Optional metadata. Missing product names imputed as `"Unknown Product"` to preserve interaction history for collaborative filtering while permitting content fallback.
-- `votes` & `helpful_votes`: Missing numerical values imputed as `0` representing zero recorded feedback votes.
+Analysis of the authentic raw dataset:
+- `user_id`: 0 missing values
+- `product_id`: 0 missing values
+- `product_name`: 0 missing values
+- `rating`: 0 missing values
+- `votes`: 0 missing values
+- `helpful_votes`: 0 missing values
+- `ID`: 0 missing values
+
+The raw data has 100% complete field population across all 745,889 rows.
 
 ## 10. Duplicate Analysis
 
-- Preprocessing enforces: `drop_duplicates(subset=["user_id", "product_id"])`.
-- In an explicit rating system without timestamps, repeated user-item pairs represent either repeated submissions or review updates.
-- In the absence of chronological ordering, the standard policy preserves the first observed unique user-item interaction record.
+- **Exact Duplicate Rows:** 0
+- **Duplicate `(user_id, product_id)` Pairs:** 0
+- Every single interaction in the 745,889 training set is a distinct user-item observation.
+- Conflicting ratings for the same user-item pair: 0.
 
 ## 11. Data Cleaning
 
-The pipeline implemented in `src/data/preprocess_data.py` and `src/data/create_entities.py` guarantees:
-1. Deterministic data loading from `data/raw/train.csv`.
-2. Explicit schema coercion (`user_id`: str, `product_id`: str, `rating`: numeric).
-3. Filtering ratings strictly to the valid domain $1 \le \text{rating} \le 5$.
-4. Logging all row alterations (initial rows, duplicates dropped, nulls dropped, invalid ratings dropped, clean rows output).
-5. Segregation of clean interactions into `data/processed/interactions.csv`.
+The pipeline implemented in `src/data/preprocess_data.py` and `src/data/create_entities.py` executes:
+1. Logical loading and concatenation of `train_part1.csv` and `train_part2.csv`.
+2. Selection of domain fields (`user_id`, `product_id`, `product_name`, `rating`, `votes`, `helpful_votes`).
+3. Explicit type coercion (`user_id`: str, `product_id`: str, `rating`: int, `votes`: int, `helpful_votes`: int).
+4. Rating domain verification ($1 \le \text{rating} \le 5$).
+5. Generation of authentic `data/processed/interactions.csv` (745,889 rows) and `data/processed/products.csv` (201,325 rows).
+6. Comprehensive audit logging to `outputs/reports/data_cleaning_audit.json`.
 
 ## 12. Train / Validation / Test Construction
 
 Under **Path B (Non-Temporal Validation Protocol)**:
-- **Strategy:** User-Level Stratified Holdout (`src/data/split_data.py`).
-- **Holdout Ratio:** 20% validation interactions for users with $\ge 5$ interactions; 80% training interactions.
-- **Cold-Start Preservation:** Users with $<5$ interactions are placed entirely in the training set to prevent zero-relevance validation anomalies.
-- **Random Seed:** Pinned to `random_state = 42` for strict determinism and reproducibility.
+- **Module:** `src/data/split_data.py`
+- **Split Mechanics:** Stratified user-level holdout. For users with $\ge 5$ interactions (1,999 users), 20% of observed interactions are held out into the validation partition, and 80% are placed in the training partition.
+- **Split Breakdown:**
+  - Training Partition: 597,502 interactions (80.11%)
+  - Validation Partition: 148,387 interactions (19.89%)
+- **Cold-Start Handling:** The 1 user with $< 5$ interactions is retained 100% in training to prevent degenerate single-item holdouts.
+- **Determinism:** Seed pinned to `random_state = 42`.
+- **Test Set Isolation:** `data/raw/test.csv` (223,553 pairs) remains strictly isolated from all model training and validation routines.
 
 ## 13. Leakage Controls
 
-1. **Split Isolation:** The training set and validation set index sets have zero intersection ($\text{Train} \cap \text{Val} = \emptyset$).
-2. **Feature Calculation:** User and product entity features used for model fitting are calculated strictly from the training partition.
-3. **Popularity Model:** Global popularity scores must be computed exclusively on training split observations.
-4. **TF-IDF Vectorization:** The content-based TF-IDF vectorizer must fit vocabulary and IDF weights on the available catalog metadata without evaluating validation target interactions.
+1. **Index Disjointness:** $\text{Train} \cap \text{Val} = \emptyset$ verified by assertion.
+2. **Popularity Feature Isolation:** Candidate rankings and popularity scores are computed strictly from training split interactions.
+3. **TF-IDF Vocabulary Isolation:** Content representations fit vocabulary on training catalog data without evaluating validation targets.
+4. **User History Isolation:** Recommendation engines use only training history when generating recommendations for evaluated users.
 
 ## 14. Cold-Start Data Availability
 
-The data foundation categorizes four operational cold-start scenarios:
-1. **New User (Zero Interactions):** Handled via Popularity baseline fallback.
-2. **Sparse User (< 5 Interactions):** Handled via hybrid content + popularity weighting.
-3. **New Product (Zero Historical Ratings):** Preserved in catalog metadata; surfaced via content-based TF-IDF similarity.
-4. **Sparse Product (< 5 Ratings):** Excluded from the pure popularity ranking (threshold = 5), but retrievable via collaborative/content hybrid scoring.
+- **New Users in Test Set:** 0 (all 2,000 test users exist in the training set).
+- **New Products in Test Set:** 18,534 products (products present in `test.csv` with metadata but zero training interactions).
+- **Sparse Products in Training Set:** 168,253 products with $< 5$ interactions.
+- **Sparse Users in Training Set:** 1 user with $< 5$ interactions.
 
 ## 15. Known Limitations
 
-1. **Absence of Timestamps:** True temporal backtesting (e.g., training on interactions up to Month $T$ and predicting Month $T+1$) cannot be performed on this dataset.
-2. **Missing Raw Source File:** `data/raw/train.csv` is not present in the current container environment due to Kaggle in-class credential restrictions.
-3. **Synthetic Artifacts Quarantined:** `data/processed/interactions.csv` and `data/processed/products.csv` are quarantined and must not be used for model training or evaluation.
+1. **Absence of Timestamps:** True temporal backtesting (e.g., training on interactions up to Month $T$ and predicting Month $T+1$) cannot be performed on this dataset because the competition organizers did not capture or distribute review dates.
+2. **Quarantined Synthetic Artifacts:** Historical synthetic artifacts generated in earlier turns remain archived in `data/quarantined_synthetic/` and are strictly excluded from modeling.
 
 ## 16. Reproducibility
 
-The data pipeline is fully reproducible:
-1. **Raw Ingestion:** `python3 src/data/acquire_data.py` registers files and generates checksums.
-2. **Cleaning:** `python3 src/data/preprocess_data.py` executes data cleaning and outputs `interactions.csv`.
-3. **Entity Generation:** `python3 src/data/create_entities.py` derives `users.csv` and `products.csv`.
-4. **Splitting:** `python3 src/data/split_data.py` produces the leakage-free train/validation split.
+Full reproduction sequence:
+1. Register raw source data: `python3 src/data/acquire_data.py`
+2. Run data cleaning pipeline: `python3 src/data/preprocess_data.py`
+3. Generate entity tables: `python3 src/data/create_entities.py`
+4. Generate leakage-free splits: `python3 src/data/split_data.py`
+5. Run verification suite: `python3 -m pytest tests/test_data_foundation.py`
+
+## 17. Tests
+
+Data foundation test suite (`tests/test_data_foundation.py`):
+- `test_popular_products_schema_and_domain`: **PASSED**
+- `test_users_schema_and_domain`: **PASSED**
+- `test_split_holdout_leakage_and_determinism`: **PASSED**
+- `test_raw_data_registry_structure`: **PASSED**
+- `test_data_foundation_audit_json_exists`: **PASSED**
+Full test suite (`tests/test_data_foundation.py` + `tests/test_recommendation.py`): **11 passed in 3.42s**.
+
+## 18. Phase 1 Exit Decision
+
+**PASS**
+
+### Justification:
+All 23 acceptance criteria of Phase 1 are completely satisfied. Authentic raw training data (`train_part1.csv` + `train_part2.csv`, 745,889 rows) and test data (`test.csv`, 223,553 rows) have been verified with SHA-256 hashes, preprocessed into clean interaction tables, validated against authentic entity baselines (100% reproducible match), and split into leakage-free train/validation sets under Path B. Zero synthetic data or timestamps are used. Phase 1 is fully UNBLOCKED and complete.

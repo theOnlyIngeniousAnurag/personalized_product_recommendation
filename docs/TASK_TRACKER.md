@@ -298,7 +298,7 @@ Final Capstone QA
 | Phase | Name | Priority | Status |
 |---|---|---:|---|
 | 0 | Control Documents | P0 | `VERIFIED` |
-| 1 | Data Foundation | P0 | `BLOCKED` |
+| 1 | Data Foundation | P0 | `VERIFIED` |
 | 2 | Canonical Recommendation Architecture | P0 | `NOT_STARTED` |
 | 3 | Modeling | P0 | `NOT_STARTED` |
 | 4 | Cold-Start Strategy | P0 | `NOT_STARTED` |
@@ -741,52 +741,51 @@ Define defensible alternative (Path B)
 ## P1-DATA-004 — Restore Raw Data
 
 **Priority:** P0  
-**Status:** `BLOCKED`
+**Status:** `VERIFIED`
 
 ### Tasks
 
-- [ ] Restore required raw dataset.
+- [x] Restore required raw dataset (`train_part1.csv` [372,944 rows] + `train_part2.csv` [372,945 rows] = 745,889 rows; `test.csv` [223,553 rows]).
 - [x] Verify file format expectations and raw registry tooling (`src/data/acquire_data.py`).
-- [ ] Verify encoding.
-- [ ] Verify row count.
-- [ ] Verify columns.
-- [ ] Verify identifiers.
-- [ ] Verify numerical fields.
-- [ ] Verify metadata fields.
-- [ ] Verify timestamp field if applicable (N/A).
-- [ ] Verify timestamp field if applicable.
+- [x] Verify encoding (UTF-8).
+- [x] Verify row count (745,889 train; 223,553 test).
+- [x] Verify columns (`user_id`, `product_id`, `product_name`, `rating`, `votes`, `helpful_votes`, `ID`).
+- [x] Verify identifiers (string format, 0 nulls).
+- [x] Verify numerical fields (ratings 1–5, votes >= 0, helpful_votes <= votes).
+- [x] Verify metadata fields (product_name, 0 nulls).
+- [x] Verify timestamp field if applicable (Confirmed: none present in source, Path B enacted).
 
 ---
 
 ## P1-DATA-005 — Restore Processed Data Pipeline
 
 **Priority:** P0  
-**Status:** `IMPLEMENTED`
+**Status:** `VERIFIED`
 
 ### Tasks
 
-Pipeline scripts implemented and verified:
+Pipeline scripts implemented, verified, and executed:
 - `src/data/acquire_data.py`: Raw directory verification and SHA-256 registry.
-- `src/data/preprocess_data.py`: Deterministic data cleaning.
-- `src/data/create_entities.py`: User and product entity generation.
-- `src/data/split_data.py`: User-level holdout splitting.
+- `src/data/preprocess_data.py`: Deterministic data cleaning (745,889 clean interactions).
+- `src/data/create_entities.py`: User (2,000) and product (201,325) entity generation.
+- `src/data/split_data.py`: User-level holdout splitting (597,502 train / 148,387 val).
 
 ---
 
 ## P1-DATA-006 — Validate Raw Dataset
 
 **Priority:** P0  
-**Status:** `BLOCKED`
+**Status:** `VERIFIED`
 
 ### Checks
 
-- [ ] Required columns exist in local raw file (`data/raw/train.csv` pending download/provision).
-- [ ] No unexpected column corruption.
-- [ ] Data types are valid.
-- [ ] IDs are usable.
-- [ ] Missing-value patterns are understood.
-- [ ] Duplicates are identified.
-- [ ] Numerical ranges are validated.
+- [x] Required columns exist in local raw files (`train_part1.csv`, `train_part2.csv`, `test.csv`).
+- [x] No unexpected column corruption.
+- [x] Data types are valid.
+- [x] IDs are usable.
+- [x] Missing-value patterns are understood (0 missing values across all columns).
+- [x] Duplicates are identified (0 exact duplicate rows; 0 duplicate user-item pairs).
+- [x] Numerical ranges are validated (ratings 1–5).
 - [x] Timestamp validity checked: Documented as absent in source (`NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED`).
 
 ---
@@ -808,13 +807,14 @@ Documented in `outputs/reports/data_foundation_report.md` and `outputs/reports/d
 ## P1-DATA-008 — Build User-Item Interaction Dataset
 
 **Priority:** P0  
-**Status:** `BLOCKED`
+**Status:** `VERIFIED`
 
 ### Tasks
 
 - [x] Define interaction representation (explicit ratings 1–5).
-- [ ] Ingest full raw interaction records (pending unauthenticated access resolution).
-- [x] Quarantine synthetic `interactions.csv` (`SYNTHETIC — NOT FOR TRAINING/EVALUATION`).
+- [x] Ingest full authentic raw interaction records (745,889 rows).
+- [x] Generate `data/processed/interactions.csv` (745,889 rows).
+- [x] Quarantine synthetic `interactions.csv` to `data/quarantined_synthetic/interactions.csv` (`SYNTHETIC — NOT FOR TRAINING/EVALUATION`).
 
 ---
 
@@ -825,7 +825,7 @@ Documented in `outputs/reports/data_foundation_report.md` and `outputs/reports/d
 
 ### Tasks
 
-- [x] Identify usable product metadata (33,072 products in authentic `data/processed/popular_products.csv`).
+- [x] Identify usable product metadata (201,325 products in authentic `data/processed/products.csv`; 33,072 in `popular_products.csv`).
 - [x] Normalize product identifiers.
 - [x] Preserve metadata needed for cold-start content recommendation.
 - [x] Validate product coverage.
@@ -837,7 +837,7 @@ Documented in `outputs/reports/data_foundation_report.md` and `outputs/reports/d
 **Priority:** P1  
 **Status:** `VERIFIED`
 
-- [x] Authentic user summary verified in `data/processed/users.csv` (2,000 users, interaction distributions, mean rating 4.28).
+- [x] Authentic user summary verified and reproduced in `data/processed/users.csv` (2,000 users, interaction distributions, mean rating 4.28).
 
 ---
 
@@ -873,15 +873,15 @@ Documented in `outputs/reports/data_foundation_report.md` and `outputs/reports/d
 
 ## PHASE 1 EXIT GATE
 
-Phase 1 Exit Decision: **`BLOCKED`**
+Phase 1 Exit Decision: **`PASS`** (Status: `VERIFIED`)
 
 - [x] Legitimate dataset source is established (`fit-5212-s-1-2025`).
-- [ ] Raw data is restored (`data/raw/train.csv` requires authenticated student credentials).
-- [x] Synthetic files quarantined (`data/DATASET_INVENTORY.md`).
+- [x] Raw data is restored (`train_part1.csv` + `train_part2.csv`, `test.csv`).
+- [x] Synthetic files quarantined (`data/DATASET_INVENTORY.md`, `data/quarantined_synthetic/`).
 - [x] Authentic baselines verified (`popular_products.csv`, `users.csv`).
 - [x] Schema is validated.
 - [x] Interaction semantics are documented (explicit ratings only).
-- [x] Product metadata is available (`popular_products.csv`).
+- [x] Product metadata is available (`products.csv`, `popular_products.csv`).
 - [x] Timestamp situation is resolved honestly (Path B enacted; no false compliance).
 - [x] No fabricated behavior is used in project evidence.
 - [x] Leakage audit passes.

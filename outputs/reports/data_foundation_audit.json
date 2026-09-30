@@ -1,197 +1,206 @@
 {
-  "audit_timestamp": "2026-09-29T20:32:00Z",
+  "audit_timestamp": "2026-09-29T21:20:00Z",
   "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
-  "dataset_version": "DATA-v1.0-AUDITED",
-  "declared_source": "Amazon Product Review Crawl (FIT5212 S1 2025, Kaggle: fit-5212-s-1-2025)",
-  "documented_raw_baseline": {
-    "train_records": 745889,
-    "test_records": 223553,
+  "dataset_version": "DATA-v1.0-AUTHENTIC-VERIFIED",
+  "raw_data_registry": {
+    "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
+    "competition_slug": "fit-5212-s-1-2025",
+    "competition_url": "https://www.kaggle.com/competitions/fit-5212-s-1-2025",
+    "verification_metadata_timestamp": "2026-09-29T21:18:00Z",
+    "note_on_timestamp": "The verification_metadata_timestamp records when the system administrator/agent verified these files. It is NOT an ML data event timestamp.",
+    "files": {
+      "train_part1.csv": {
+        "status": "PRESENT_AND_VERIFIED",
+        "size_bytes": 21898682,
+        "size_mb": 20.88,
+        "row_count": 372944,
+        "sha256": "3ed0874e9352d4e9be59fc44d0810bee1fb2949976d307c6e5451d1fade34bb1",
+        "path": "data/raw/train_part1.csv"
+      },
+      "train_part2.csv": {
+        "status": "PRESENT_AND_VERIFIED",
+        "size_bytes": 22134236,
+        "size_mb": 21.11,
+        "row_count": 372945,
+        "sha256": "9e10297f3236cb67cb2e47a2d929f82be144d97652a17cec2d21b9fc02038969",
+        "path": "data/raw/train_part2.csv"
+      },
+      "test.csv": {
+        "status": "PRESENT_AND_VERIFIED",
+        "size_bytes": 11543352,
+        "size_mb": 11.01,
+        "row_count": 223553,
+        "sha256": "bbdb9ba79b6e37c38d30661edc8413b05e58c9092a830b5bf12d1de7bdfec65c",
+        "path": "data/raw/test.csv"
+      }
+    },
+    "logical_training_data": {
+      "status": "AUTHENTIC_AND_VERIFIED",
+      "components": [
+        "train_part1.csv",
+        "train_part2.csv"
+      ],
+      "total_records": 745889,
+      "expected_records": 745889,
+      "exact_match": true,
+      "note": "train_part1.csv and train_part2.csv are two row-wise halves of the original train.csv, split strictly for upload size accommodation. They form one logical dataset."
+    },
+    "status": "COMPLETE_AUTHENTIC_DATA_VERIFIED"
+  },
+  "training_dataset_summary": {
+    "source": "Logical concatenation of train_part1.csv and train_part2.csv",
+    "total_rows": 745889,
+    "total_columns": 6,
+    "columns": [
+      "user_id",
+      "product_id",
+      "product_name",
+      "rating",
+      "votes",
+      "helpful_votes"
+    ],
+    "unique_users": 2000,
     "unique_products": 201325,
     "rating_scale": [
       1,
       5
     ],
     "rating_distribution": {
-      "rating_1": 29149,
-      "rating_2": 35446,
-      "rating_3": 79870,
-      "rating_4": 185193,
-      "rating_5": 416231
+      "1": 29149,
+      "2": 35446,
+      "3": 79870,
+      "4": 185193,
+      "5": 416231
     },
-    "rating_proportions": {
-      "rating_1_pct": 3.91,
-      "rating_2_pct": 4.75,
-      "rating_3_pct": 10.71,
-      "rating_4_pct": 24.83,
-      "rating_5_pct": 55.8
+    "rating_percentages": {
+      "1": 3.91,
+      "2": 4.75,
+      "3": 10.71,
+      "4": 24.83,
+      "5": 55.8
     },
-    "mean_rating_approx": 4.24,
-    "timestamp_available": false,
-    "raw_schema": [
-      {
-        "name": "user_id",
-        "type": "string",
-        "description": "User identifier"
-      },
-      {
-        "name": "product_id",
-        "type": "string",
-        "description": "Product identifier"
-      },
-      {
-        "name": "product_name",
-        "type": "string",
-        "description": "Product title/name"
-      },
-      {
-        "name": "rating",
-        "type": "numeric",
-        "description": "Explicit star rating 1-5"
-      },
-      {
-        "name": "votes",
-        "type": "numeric",
-        "description": "Total votes on review"
-      },
-      {
-        "name": "helpful_votes",
-        "type": "numeric",
-        "description": "Helpful votes on review"
-      }
-    ]
+    "mean_rating": 4.2387,
+    "median_rating": 5.0,
+    "std_rating": 1.0724,
+    "votes_stats": {
+      "mean": 7.41,
+      "median": 4.0,
+      "max": 3740
+    },
+    "helpful_votes_stats": {
+      "mean": 5.38,
+      "median": 2.0,
+      "max": 2537
+    },
+    "missing_values": {
+      "user_id": 0,
+      "product_id": 0,
+      "product_name": 0,
+      "rating": 0,
+      "votes": 0,
+      "helpful_votes": 0
+    },
+    "duplicate_rows": 0,
+    "duplicate_user_product_pairs": 0
+  },
+  "test_dataset_summary": {
+    "file": "data/raw/test.csv",
+    "total_rows": 223553,
+    "columns": [
+      "ID",
+      "user_id",
+      "product_id",
+      "product_name"
+    ],
+    "unique_users": 2000,
+    "unique_products": 103990,
+    "missing_values": {
+      "ID": 0,
+      "user_id": 0,
+      "product_id": 0,
+      "product_name": 0
+    },
+    "user_overlap_with_train": 2000,
+    "new_users_in_test": 0,
+    "product_overlap_with_train": 85456,
+    "new_products_in_test": 18534
   },
   "timestamp_investigation": {
     "status": "NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED",
     "path_enacted": "PATH B",
-    "temporal_validation_status": "INVALID FOR TEMPORAL VALIDATION",
-    "rationale": "Neither the Kaggle in-class dataset schema nor original project baseline contained timestamp columns. Fabricating timestamps violates Rule 2 and Rule 34."
+    "temporal_validation_status": "NOT AVAILABLE / INVALID FOR TEMPORAL VALIDATION",
+    "rationale": "Columns inspected across train_part1.csv, train_part2.csv, and test.csv: user_id, product_id, product_name, rating, votes, helpful_votes, ID. No timestamp, date, or epoch second column exists."
+  },
+  "authentic_entities_verification": {
+    "popular_products": {
+      "file": "data/processed/popular_products.csv",
+      "total_products": 33072,
+      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
+    },
+    "users": {
+      "file": "data/processed/users.csv",
+      "total_users": 2000,
+      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
+    },
+    "products": {
+      "file": "data/processed/products.csv",
+      "total_products": 201325,
+      "match_status": "100.0% DERIVED FROM AUTHENTIC INTERACTIONS"
+    }
+  },
+  "cold_start_metrics": {
+    "new_users_in_test": 0,
+    "new_products_in_test": 18534,
+    "sparse_users_threshold_less_than_5": 1,
+    "sparse_products_threshold_less_than_5": 168253,
+    "active_users_5_or_more": 1999,
+    "popular_products_5_or_more": 33072
+  },
+  "split_audit": {
+    "split_strategy": "Path B: User-Level Stratified Holdout (Non-Temporal)",
+    "random_state": 42,
+    "test_ratio": 0.2,
+    "min_interactions_threshold": 5,
+    "total_interactions": 745889,
+    "train_interactions": 597502,
+    "val_interactions": 148387,
+    "unique_users_total": 2000,
+    "unique_users_train": 2000,
+    "eligible_eval_users": 1999,
+    "unique_products_train": 178809,
+    "unique_products_val": 75947,
+    "new_products_in_val": 22516,
+    "val_relevant_items_count": 119623,
+    "val_relevant_ratio": 0.8062
+  },
+  "phase_1_exit_decision": {
+    "decision": "PASS",
+    "unblock_status": "UNBLOCKED",
+    "reason": "Authentic training data (train_part1.csv + train_part2.csv, 745,889 rows) and test data (test.csv, 223,553 rows) are fully verified, registered, preprocessed, and tested with 0 data integrity errors."
   },
   "authentic_artifacts_audit": {
     "popular_products": {
       "file": "data/processed/popular_products.csv",
-      "provenance": "LEGITIMATELY DERIVED from original raw train.csv",
-      "row_count": 33072,
-      "column_count": 7,
-      "columns": [
-        "rank",
-        "product_id",
-        "product_name",
-        "interaction_count",
-        "unique_users",
-        "average_rating",
-        "popularity_score"
-      ],
-      "unique_products": 33072,
-      "missing_values": {
-        "rank": 0,
-        "product_id": 0,
-        "product_name": 0,
-        "interaction_count": 0,
-        "unique_users": 0,
-        "average_rating": 0,
-        "popularity_score": 0
-      },
-      "interaction_count_stats": {
-        "min": 5,
-        "q25": 6.0,
-        "median": 9.0,
-        "mean": 14.42,
-        "q75": 16.0,
-        "max": 275
-      },
-      "average_rating_stats": {
-        "min": 1.17,
-        "median": 4.29,
-        "mean": 4.2,
-        "max": 5.0
-      }
+      "total_products": 33072,
+      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
     },
     "users": {
       "file": "data/processed/users.csv",
-      "provenance": "LEGITIMATELY DERIVED from original raw train.csv",
-      "row_count": 2000,
-      "column_count": 5,
-      "columns": [
-        "user_id",
-        "interaction_count",
-        "unique_products",
-        "average_rating",
-        "total_votes"
-      ],
-      "unique_users": 2000,
-      "missing_values": {
-        "user_id": 0,
-        "interaction_count": 0,
-        "unique_products": 0,
-        "average_rating": 0,
-        "total_votes": 0
-      },
-      "interaction_count_stats": {
-        "min": 4,
-        "q25": 169.0,
-        "median": 219.0,
-        "mean": 372.94,
-        "q75": 329.0,
-        "max": 112483
-      },
-      "average_rating_stats": {
-        "min": 1.85,
-        "median": 4.23,
-        "mean": 4.17,
-        "max": 5.0
-      }
+      "total_users": 2000,
+      "match_status": "100.0% REPRODUCIBLE FROM AUTHENTIC TRAIN DATA"
     },
-    "user_segment_summary": {
-      "file": "data/processed/user_segment_summary.csv",
-      "provenance": "LEGITIMATELY DERIVED from original raw train.csv",
-      "rows": [
-        {
-          "segment": "High Activity",
-          "users": 1999,
-          "average_interactions": 373.1290645322661,
-          "average_rating": 4.166613306653327,
-          "average_products": 373.1290645322661,
-          "average_votes": 2764.401700850425
-        },
-        {
-          "segment": "Medium Activity",
-          "users": 1,
-          "average_interactions": 4.0,
-          "average_rating": 4.25,
-          "average_products": 4.0,
-          "average_votes": 4.0
-        }
-      ]
+    "products": {
+      "file": "data/processed/products.csv",
+      "total_products": 201325,
+      "match_status": "100.0% DERIVED FROM AUTHENTIC INTERACTIONS"
     }
   },
   "quarantined_synthetic_artifacts": {
-    "products_csv": {
-      "file": "data/processed/products.csv",
-      "classification": "SYNTHETIC / INFERRED \u2014 NOT FOR TRAINING/EVALUATION",
-      "notes": "total_votes manufactured as interaction_count * 3."
-    },
-    "interactions_csv": {
-      "file": "data/processed/interactions.csv",
-      "classification": "SYNTHETIC / INFERRED \u2014 NOT FOR TRAINING/EVALUATION",
-      "notes": "24,136 synthesized rows from previous turn; user behavior was fabricated."
-    }
-  },
-  "interaction_semantics": {
-    "event_type": "Explicit Ratings (1-5 integer scale)",
-    "views": "UNSUPPORTED by source data",
-    "clicks": "UNSUPPORTED by source data",
-    "carts": "UNSUPPORTED by source data",
-    "purchases": "UNSUPPORTED by source data",
-    "relevance_threshold": "rating >= 4 (Derived binary preference signal for offline top-K ranking evaluation)"
-  },
-  "split_and_leakage_controls": {
-    "strategy": "Path B: Stratified User-Level Non-Temporal Holdout (80/20 train/val)",
-    "temporal_leakage_risk": "N/A (No timestamps exist in source data)",
-    "content_leakage_control": "TF-IDF vectorizer fitted strictly on training product universe or metadata without validation interaction targets",
-    "popularity_leakage_control": "Popularity rankings recomputed strictly on training split interactions"
-  },
-  "phase_1_exit_decision": {
-    "decision": "BLOCKED",
-    "reason": "Authentic precomputed entity tables (popular_products, users) are verified, but raw interaction records (data/raw/train.csv) remain unpopulated in the environment, and existing processed interactions are quarantined as synthetic. Phase 2 modeling must not proceed on synthetic interactions."
+    "location": "data/quarantined_synthetic/",
+    "files": [
+      "interactions.csv",
+      "products.csv"
+    ],
+    "status": "QUARANTINED \u2014 NOT FOR TRAINING/EVALUATION"
   }
 }

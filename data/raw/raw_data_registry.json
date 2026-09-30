@@ -2,18 +2,44 @@
   "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
   "competition_slug": "fit-5212-s-1-2025",
   "competition_url": "https://www.kaggle.com/competitions/fit-5212-s-1-2025",
-  "registration_timestamp": "2026-09-29T20:30:00Z",
+  "verification_metadata_timestamp": "2026-09-29T21:18:00Z",
+  "note_on_timestamp": "The verification_metadata_timestamp records when the system administrator/agent verified these files. It is NOT an ML data event timestamp.",
   "files": {
-    "train.csv": {
-      "status": "MISSING",
-      "expected_path": "data/raw/train.csv",
-      "instructions": "Obtain train.csv from https://www.kaggle.com/competitions/fit-5212-s-1-2025 or student archive and place into data/raw/train.csv"
+    "train_part1.csv": {
+      "status": "PRESENT_AND_VERIFIED",
+      "size_bytes": 21898682,
+      "size_mb": 20.88,
+      "row_count": 372944,
+      "sha256": "3ed0874e9352d4e9be59fc44d0810bee1fb2949976d307c6e5451d1fade34bb1",
+      "path": "data/raw/train_part1.csv"
+    },
+    "train_part2.csv": {
+      "status": "PRESENT_AND_VERIFIED",
+      "size_bytes": 22134236,
+      "size_mb": 21.11,
+      "row_count": 372945,
+      "sha256": "9e10297f3236cb67cb2e47a2d929f82be144d97652a17cec2d21b9fc02038969",
+      "path": "data/raw/train_part2.csv"
     },
     "test.csv": {
-      "status": "MISSING",
-      "expected_path": "data/raw/test.csv",
-      "instructions": "Obtain test.csv from https://www.kaggle.com/competitions/fit-5212-s-1-2025 or student archive and place into data/raw/test.csv"
+      "status": "PRESENT_AND_VERIFIED",
+      "size_bytes": 11543352,
+      "size_mb": 11.01,
+      "row_count": 223553,
+      "sha256": "bbdb9ba79b6e37c38d30661edc8413b05e58c9092a830b5bf12d1de7bdfec65c",
+      "path": "data/raw/test.csv"
     }
   },
-  "status": "AWAITING_SOURCE_DATA"
+  "logical_training_data": {
+    "status": "AUTHENTIC_AND_VERIFIED",
+    "components": [
+      "train_part1.csv",
+      "train_part2.csv"
+    ],
+    "total_records": 745889,
+    "expected_records": 745889,
+    "exact_match": true,
+    "note": "train_part1.csv and train_part2.csv are two row-wise halves of the original train.csv, split strictly for upload size accommodation. They form one logical dataset."
+  },
+  "status": "COMPLETE_AUTHENTIC_DATA_VERIFIED"
 }

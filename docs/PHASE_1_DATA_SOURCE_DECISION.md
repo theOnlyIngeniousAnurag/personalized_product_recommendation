@@ -25,37 +25,37 @@ The original project dataset is the **Monash University FIT5212 S1 2025 Recommen
 
 | Source | Relationship | Timestamp? | Legitimate? | Reproducible? | Decision |
 |---|---|---|---|---|---|
-| **Kaggle In-Class `fit-5212-s-1-2025`** | Authoritative competition distribution | No | Yes (Authoritative) | Requires authenticated student API credentials (HTTP 401 Unauthorized for public access) | **SELECTED AS OFFICIAL CANONICAL SOURCE** (Awaiting credentialed download / manual file ingestion) |
-| **Public Amazon Snapshots (UCSD McAuley / Stanford SNAP)** | Third-party crawl of Amazon reviews | Yes (`unixReviewTime`) | Legitimate external dataset, but NOT the project dataset | Yes | **REJECTED**: Distinct ID space, different tokenization, incompatible user/product entities; violates Rule 1 & Rule 36 ("Do not replace the project dataset with an unrelated recommendation dataset... Do not sacrifice dataset identity merely to obtain timestamps"). |
-| **MovieLens (100k / 1M / 20M)** | Unrelated movie rating benchmark | Yes (`timestamp`) | Legitimate external benchmark | Yes | **REJECTED**: Completely unrelated product domain and entity IDs; incompatible with project architecture and UI. |
-| **Existing Verified Baseline Artifacts (`popular_products.csv`, `users.csv`)** | Preserved precomputed project artifacts from legitimate `train.csv` | No | Yes (Authentic precomputed artifacts) | 100% reproducible within repository | **RETAINED AS AUTHORITATIVE GROUND-TRUTH ENTITY BASELINES** |
-| **Synthesized CSVs (`data/processed/interactions.csv`, `data/processed/products.csv`)** | Procedurally generated artifacts from previous turn | No | No (Synthetic / Inferred) | Procedural | **REJECTED FOR MODELING/EVALUATION**: Classified as `SYNTHETIC — NOT FOR TRAINING/EVALUATION`. |
+| **Supplied Authentic Raw Data (`train_part1.csv` + `train_part2.csv`, `test.csv`)** | Authoritative competition files supplied by user | No | Yes (Authoritative, verified SHA-256) | 100% reproducible within repository | **SELECTED & INGESTED AS OFFICIAL CANONICAL SOURCE** (Unblocks Phase 1) |
+| **Public Amazon Snapshots (UCSD McAuley / Stanford SNAP)** | Third-party crawl of Amazon reviews | Yes (`unixReviewTime`) | Legitimate external dataset, but NOT the project dataset | Yes | **REJECTED**: Distinct ID space, different tokenization, incompatible user/product entities; violates Rule 1 & Rule 36. |
+| **MovieLens (100k / 1M / 20M)** | Unrelated movie rating benchmark | Yes (`timestamp`) | Legitimate external benchmark | Yes | **REJECTED**: Incompatible with project domain, entities, and UI. |
+| **Existing Verified Baseline Artifacts (`popular_products.csv`, `users.csv`)** | Preserved precomputed project artifacts from legitimate `train.csv` | No | Yes (Authentic precomputed artifacts) | 100% reproducible within repository | **CONFIRMED & REPRODUCED (100.0% EXACT MATCH)** |
+| **Quarantined Synthetic CSVs (`data/quarantined_synthetic/`)** | Procedurally generated artifacts from previous turn | No | No (Synthetic / Inferred) | Procedural | **QUARANTINED**: Archived into `data/quarantined_synthetic/`, strictly excluded from all modeling and evaluation. |
 
 ## 4. Selected Source
 
-The official canonical dataset for this project remains:
-**Monash University FIT5212 S1 2025 Recommender System Challenge (`fit-5212-s-1-2025`)**, supplemented by the project's authentic, verified precomputed entity artifacts (`popular_products.csv` and `users.csv`).
+The official canonical dataset for this project is:
+**Monash University FIT5212 S1 2025 Recommender System Challenge (`fit-5212-s-1-2025`)**, ingested via `data/raw/train_part1.csv` (372,944 rows) and `data/raw/train_part2.csv` (372,945 rows) forming 745,889 authentic interactions, accompanied by `data/raw/test.csv` (223,553 rows).
 
 ## 5. Why This Source Was Selected
 
-1. **Dataset Identity Preservation (Rule 36):** The project architecture, Streamlit UI, candidate generator, product search, user segmentation, and documentation are strictly designed around this specific Amazon crawl dataset.
-2. **Authentic Ground Truth:** The precomputed artifacts (`popular_products.csv`, `users.csv`) preserve exact interaction aggregations, user profiles, and product names from the genuine competition `train.csv`.
-3. **No Semantic Corruption:** Introducing external datasets would corrupt product metadata and require inventing mappings to the 33,072 products already referenced across the application and documentation.
-4. **Honest Evaluation Boundary:** Rather than fabricating compliance by adopting an unrelated dataset solely for timestamps, adopting the documented dataset preserves scientific integrity.
+1. **Exact Historical Match:** 745,889 training interactions and 223,553 test pairs match the documented FIT5212 competition baseline to the exact row count.
+2. **Entity Consistency:** Re-aggregating the supplied data reproduces `data/processed/users.csv` and `data/processed/popular_products.csv` with a 100.0% exact match across all 2,000 users and 33,072 products.
+3. **Dataset Identity Preservation (Rule 36):** Preserves complete alignment with the repository architecture, models, API, UI, and documentation without entity corruption.
 
 ## 6. Timestamp Finding
 
 **NO LEGITIMATE TIMESTAMP SOURCE IDENTIFIED**
 
-- Neither the Kaggle competition dataset `fit-5212-s-1-2025` nor the authentic baseline artifacts contain a timestamp column.
+- Neither the Kaggle competition dataset `fit-5212-s-1-2025` (`train_part1.csv`, `train_part2.csv`, `test.csv`) nor the baseline artifacts contain a timestamp column.
 - As confirmed by the original repository data report (`outputs/reports/data_analysis_report.txt` Section 5): *"The dataset does not contain a timestamp field. Therefore, a genuine chronological/time-based validation split cannot be performed from the available data. The evaluation procedure uses a user-level holdout strategy instead of assuming or fabricating timestamps."*
 - Consequently, **Path B** of Section 7 is formally enacted.
 - Any attempt to invent timestamps or infer chronology from row indexes or IDs is classified as **INVALID FOR TEMPORAL VALIDATION**.
 
 ## 7. Data Governance Decision
 
-1. **Path B Enacted:** The project adopts a rigorous non-temporal, user-level holdout validation protocol (80% training / 20% validation per eligible user, stratified by user activity), as detailed in `EVALUATION_AND_ERROR_ANALYSIS.md` and `EXPERIMENT_PLAN.md`.
+1. **Path B Enacted:** The project adopts a rigorous non-temporal, user-level holdout validation protocol (80% training / 20% validation per eligible user, stratified by user activity, random seed = 42), as detailed in `EVALUATION_AND_ERROR_ANALYSIS.md` and `EXPERIMENT_PLAN.md`.
 2. **Temporal Validation Status:** The project explicitly documents that true temporal validation is unavailable for this dataset version, satisfying Rule 34 and Rule-TIME-006 without fabrication.
-3. **Synthetic Data Quarantined:** `data/processed/interactions.csv` and `data/processed/products.csv` are marked as `SYNTHETIC — NOT FOR TRAINING/EVALUATION`. They are preserved as non-training historical artifacts (Rule 4) and will not be used to train models or calculate evaluation metrics.
-4. **Acquisition Pipeline Provided:** A reproducible acquisition script (`src/data/acquire_data.py`) and data directory structure (`data/raw/`, `data/interim/`, `data/processed/`) are established to ingest and validate `train.csv` when supplied by an authorized user or through Kaggle credentials.
-5. **Phase 1 Readiness Gated:** The Phase 1 Exit Gate is governed by whether legitimate raw interactions are in place before Phase 2 begins.
+3. **Synthetic Data Quarantined:** Old synthetic files are safely moved to `data/quarantined_synthetic/` under a strict quarantine policy. All operational processed files are 100% authentic and derived from the supplied raw data.
+4. **Acquisition & Pipeline Verified:** `src/data/acquire_data.py`, `src/data/preprocess_data.py`, `src/data/create_entities.py`, and `src/data/split_data.py` are executed and verified.
+5. **Phase 1 Unblocked:** With authentic raw training and test data verified in the environment, the Phase 1 blocker is resolved.
+

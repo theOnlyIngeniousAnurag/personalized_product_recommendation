@@ -7,6 +7,7 @@
     "build": "python3 -m pytest tests/test_recommendation.py",
     "start": "streamlit run app/streamlit_app.py --server.port 3000 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false",
     "api": "uvicorn api.recommendation_api:app --host 0.0.0.0 --port 8000",
-    "test": "python3 -m pytest tests/test_recommendation.py"
+    "test": "python3 -m pytest tests/test_recommendation.py",
+    "lint": "python3 -m py_compile src/data/*.py src/recommendation/*.py src/utils/*.py tests/*.py"
   }
 }

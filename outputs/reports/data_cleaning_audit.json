@@ -1,0 +1,51 @@
+{
+  "pipeline": "src/data/preprocess_data.py",
+  "source": "Logical concatenation of train_part1.csv and train_part2.csv",
+  "initial_rows": 745889,
+  "initial_cols": 7,
+  "initial_columns": [
+    "user_id",
+    "product_id",
+    "product_name",
+    "rating",
+    "votes",
+    "helpful_votes",
+    "ID"
+  ],
+  "duplicates": {
+    "exact_duplicates": 0,
+    "user_item_duplicates": 0,
+    "rows_removed": 0
+  },
+  "missing_values": {
+    "missing_before": {
+      "user_id": 0,
+      "product_id": 0,
+      "product_name": 0,
+      "rating": 0,
+      "votes": 0,
+      "helpful_votes": 0
+    },
+    "null_rows_dropped": 0
+  },
+  "rating_domain": {
+    "domain_min": 1,
+    "domain_max": 5,
+    "invalid_ratings_dropped": 0
+  },
+  "final_dataset": {
+    "output_path": "data/processed/interactions.csv",
+    "final_rows": 745889,
+    "final_cols": 6,
+    "unique_users": 2000,
+    "unique_products": 201325,
+    "rating_distribution": {
+      "1": 29149,
+      "2": 35446,
+      "3": 79870,
+      "4": 185193,
+      "5": 416231
+    },
+    "mean_rating": 4.2387
+  }
+}
