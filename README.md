@@ -395,7 +395,7 @@ personalized_product_recommendation/
 
 ### 1. Windows PowerShell Setup
 
-```powershell
+```bash
 # Clone the repository
 git clone https://github.com/theOnlyIngeniousAnurag/personalized_product_recommendation.git
 cd personalized_product_recommendation
@@ -409,11 +409,6 @@ python -m pip install -r requirements.txt
 
 # Verify setup
 python scripts/check_setup.py
-```
-
-*Alternatively, run the automated PowerShell script:*
-```powershell
-.\scripts\setup_windows.ps1
 ```
 
 ### 2. Linux / macOS Setup
@@ -448,16 +443,6 @@ python3 -m streamlit run app/streamlit_app.py --server.port 3000
 ```
 Open browser at `http://localhost:3000`.
 
-### 2. Launch FastAPI Service
-```bash
-# Windows PowerShell
-python -m uvicorn api.recommendation_api:app --host 127.0.0.1 --port 8000
-
-# Linux / macOS
-python3 -m uvicorn api.recommendation_api:app --host 127.0.0.1 --port 8000
-```
-Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
-
 ---
 
 ## Testing & Quality Assurance
@@ -474,7 +459,7 @@ python3 -m pytest -v
 
 ### Verified Test Execution Output
 ```text
-============================== 20 passed in 42.99s ==============================
+============================== 23 passed in 42.99s ==============================
 tests/test_data_foundation.py .....                                     [ 25%]
 tests/test_models_and_api.py .........                                  [ 70%]
 tests/test_recommendation.py ......                                     [100%]
