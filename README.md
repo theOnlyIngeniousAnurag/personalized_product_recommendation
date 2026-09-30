@@ -435,26 +435,6 @@ tests/test_recommendation.py ......                                     [100%]
 
 ---
 
-## Project Status
-
-### Overall Status: PROJECT 3 — COMPLETE
-
-- [x] **Data Foundation & Cleaning**: 745,889 authentic review interactions loaded & verified.
-- [x] **Data Splitting**: Path B User-Level Stratified Holdout (80/20 train/val).
-- [x] **Popularity Baseline**: Implemented with rating x interaction count scoring.
-- [x] **Collaborative Filtering**: Memory-based User-kNN cosine recommender.
-- [x] **Matrix Factorization**: Latent factor SVD recommender ($k=20$).
-- [x] **Content-Based Model**: Title TF-IDF cosine similarity recommender.
-- [x] **Canonical Hybrid Engine**: Unified 50/30/20 weighted orchestrator with cold-start fallback.
-- [x] **Offline Ranking Metrics**: P@K, R@K, NDCG@K evaluation across 1,999 users.
-- [x] **User Segmentation**: Empirical interaction tertile analysis.
-- [x] **FastAPI Service**: Production REST API endpoints with status validation.
-- [x] **Streamlit UI**: Premium dark glassmorphism analytics & recommendation app.
-- [x] **Automated QA**: 20/20 passing pytest suite.
-- [x] **Portfolio Packaging**: Clean repository structure & complete documentation.
-
----
-
 ## License & Attribution
 
 - **Dataset**: Monash University FIT5212 S1 2025 Recommender Challenge (Amazon Product Reviews).
