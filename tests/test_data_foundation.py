@@ -99,11 +99,20 @@ def test_split_holdout_leakage_and_determinism():
     assert os.path.exists(TRAIN_INTERACTIONS), f"Missing {TRAIN_INTERACTIONS}"
     assert os.path.exists(VAL_INTERACTIONS), f"Missing {VAL_INTERACTIONS}"
     
-    train_df = pd.read_csv(TRAIN_INTERACTIONS)
-    val_df = pd.read_csv(VAL_INTERACTIONS)
+    train_df = pd.read_csv(TRAIN_INTERACTIONS, dtype={"user_id": str, "product_id": str})
+    val_df = pd.read_csv(VAL_INTERACTIONS, dtype={"user_id": str, "product_id": str})
     
     assert len(train_df) > 0, "Train partition is empty"
     assert len(val_df) > 0, "Validation partition is empty"
+    
+    assert len(train_df) == 597501, f"Expected 597,501 train rows, got {len(train_df):,}"
+    assert len(val_df) == 148388, f"Expected 148,388 val rows, got {len(val_df):,}"
+    assert len(train_df) + len(val_df) == 745889, "Combined partitions must equal total interactions (745,889)"
+
+    # Schema integrity check
+    for col in ["user_id", "product_id", "product_name", "rating"]:
+        assert col in train_df.columns, f"Missing {col} in train_df"
+        assert col in val_df.columns, f"Missing {col} in val_df"
 
 
 def test_raw_data_registry_structure():

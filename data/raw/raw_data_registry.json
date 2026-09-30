@@ -1,7 +1,7 @@
 {
   "dataset_name": "Monash University FIT5212 S1 2025 Recommender System Challenge",
   "competition_slug": "fit-5212-s-1-2025",
-  "verification_metadata_timestamp": "2026-09-30T20:57:52.021940+00:00",
+  "verification_metadata_timestamp": "2026-09-30T21:35:30.399988+00:00",
   "files": {
     "train_part1.csv": {
       "status": "PRESENT_AND_VERIFIED",
