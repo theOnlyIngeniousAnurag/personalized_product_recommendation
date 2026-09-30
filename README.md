@@ -455,23 +455,6 @@ tests/test_recommendation.py ......                                     [100%]
 
 ---
 
-## Limitations
-
-1. **Absence of Timestamps**: The authentic Monash FIT5212 dataset contains no timestamp field, preventing temporal train/val splitting and time-decayed similarity modeling.
-2. **Explicit Ratings Only**: Interactions consist strictly of 1–5 integer ratings without implicit event logs (clicks, add-to-carts, page views).
-3. **Title-Only Metadata**: Item features are derived exclusively from product titles without category taxonomies, brand names, or image representations.
-
----
-
-## Future Improvements
-
-- **Implicit Feedback Integration**: Incorporate clickstream and session logs to train pairwise ranking loss models (e.g., BPR, WARP).
-- **Deep Neural Recommendations**: Explore Neural Collaborative Filtering (NCF) and Two-Tower DNN architectures.
-- **Richer Metadata Embeddings**: Leverage Transformer text embeddings (e.g., Sentence-BERT) on full item descriptions.
-- **Real-Time A/B Testing**: Deploy online bandit algorithms to optimize hybrid component weights dynamically.
-
----
-
 ## License & Attribution
 
 - **Dataset**: Monash University FIT5212 S1 2025 Recommender Challenge (Amazon Product Reviews).
